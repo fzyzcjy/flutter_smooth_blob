@@ -7725,6 +7725,14 @@ https://godbolt.org/z/r433E75Tx
 
 ### Exposing hook about tickers with zero overhead
 
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
+
+---
+
+
+
 This PR is a part for implementing the 60fps smooth rendering (#101227).
 
 Some discussions can be seen in Discord, such as around https://discordapp.com/channels/608014603317936148/608021234516754444/1024141682377236500.
@@ -7766,6 +7774,14 @@ If you need help, consider asking for advice on the #hackers-new channel on [Dis
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112437" source="github" createTime="2022-09-27T03:53:22Z">
 
 ### Exposing hook for RenderObject.layout with zero overhead
+
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
+
+---
+
+
 
 **Remark:** This PR has less priority compared with the other two (https://github.com/flutter/engine/pull/36438, https://github.com/flutter/flutter/pull/112436), because this one can be workaround, while the other two are really mandatory to implement PreemptBuilder.
 
@@ -7822,6 +7838,14 @@ https://github.com/flutter/flutter/pull/112437
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36438" source="github" createTime="2022-09-27T05:49:30Z">
 
 ### Allow render to be called multiple times for one BeginFrame
+
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
+
+---
+
+
 
 This PR is a part for implementing the 60fps smooth rendering (#101227).
 
@@ -9654,9 +9678,15 @@ If you need help, consider asking for advice on the #hackers-new channel on [Dis
 
 ### Expose `NotifyIdle` from RuntimeController to Dart, allowing `flutter_smooth` to get 60FPS, even if GC needs to run for 14ms per 16.67ms
 
-The PR simply exposes `RuntimeController::NotifyIdle` to the dart layer.
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
 
-Remark: This works well in my flutter_smooth experiments, and contributes to the final ~60FPS benchmark result.
+---
+
+
+
+The PR simply exposes `RuntimeController::NotifyIdle` to the dart layer.
 
 It is necessary for https://github.com/fzyzcjy/flutter_smooth because of the following commonly seen scenario: Suppose we are in a janky frame (say it takes 200ms). Then, NotifyIdle is *never* called at all, because it is usually called at the end of DrawFrame (indeed, more exactly, in the Animator::AwaitVSync). Then, during the 200ms, garbage accumulates, and at one time the young generation is full, then Dart VM must stop the world and make a GC. From my experiments, such GC can even take 20ms on my testing device. Stop the world for 20ms - then we must miss one frames, causing non-60FPS. Even if the stop-the-world GC is fast, say, 5ms, it can still cause a jank. For example, when it happens at 97.5ms-102.5ms, then the preemptRender which should originally be done near 98-100ms can only be done at 105ms, so it calls window.render too late, thus the rasterizer may fail to rasterize the frame before the 116.67ms vsync, so there is a jank. (If needed, I can draw a figure).
 
@@ -9828,9 +9858,12 @@ This PR yes. I'll still work off of the original issue so we can keep the wonder
 
 ### Speed up pointer data packet dispatching by roughly 2x when multiple packets come
 
-*I will add tests and fix CI and refine code after some code review - since review may request changing the code :)*
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
 
-Remark: This works well in my flutter_smooth experiments, and contributes to the final ~60FPS benchmark result.
+---
+
 
 #### Benefits for Flutter (without considering flutter_smooth)
 
@@ -9890,9 +9923,12 @@ If you need help, consider asking for advice on the #hackers-new channel on [Dis
 
 ### Make deadline of `NotifyIdle` configurable, allowing `flutter_smooth` to get 60FPS, even if GC needs to run for 14ms per 16.67ms
 
-Note: I deliberately do not add any tests yet, because the test are trivial and I want to listen to some feedbacks first (e.g. changing the PR). After feedbacks I will definitely add tests, no worries :)
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
 
-Remark: This works well in my flutter_smooth experiments, and contributes to the final ~60FPS benchmark result.
+---
+
 
 This PR is similar to https://github.com/flutter/engine/pull/36797. However, it addresses another portion of the GC-caused-jank problem.
 
@@ -9936,9 +9972,13 @@ If you need help, consider asking for advice on the #hackers-new channel on [Dis
 
 ### Fix jank and large-jumping frame by controlling rasterizer ending time
 
-*I will add tests and refine code and enhance strategy etc after some code review - since review may request changing the code :)*
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
 
-Remark: This works well in my flutter_smooth experiments, and contributes nontrivially to the final ~60FPS benchmark result. But it benefits Flutter even without flutter_smooth as well!
+---
+
+
 
 Consider the problem - what will happen, when the computation latency becomes lower temporarily? Looks like it is a good thing, since faster means better; many FPS monitors also do not think this is a problem. Spoiler: It is a bad thing - pay a jank.
 
@@ -10053,6 +10093,13 @@ My bad, it is correct :)
 
 ### Fix janks caused by await vsync in classical Flutter
 
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
+
+---
+
+
 *This fixes the jank happened in **classical** Flutter, even without the existence of flutter_smooth*
 
 *I will add tests and refine code etc after some code review - since review may request changing the code :)*
@@ -10117,12 +10164,15 @@ __Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/w
 
 ### Remove (3N-1) jank and big-jump when N rasterization misses deadline
 
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
+
+---
+
+
 
 *This fixes the jank happened in **classical** Flutter, even without the existence of flutter_smooth*
-
-*I will add tests and refine code etc after some code review - since review may request changing the code :)*
-
-*This works pretty well in flutter_smooth, see https://github.com/fzyzcjy/engine/blob/flutter-smooth/shell/common/animator.cc for full code.*
 
 *This PR works with https://github.com/flutter/engine/pull/36438*
 
@@ -10195,8 +10245,12 @@ __Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/w
 ### Add `peekPointerDataPacket` to get pointer data packets earlier
 
 
-*I will add tests and refine code etc (for example the unneeded memory copies) after some code review - since review may request changing the code :)*
-*This works pretty well in flutter_smooth, see https://github.com/fzyzcjy/engine/blob/flutter-smooth/shell/common/animator.cc for full code.*
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
+
+---
+
 
 This is needed by flutter_smooth in order to handle events. More specifically, when we are in the middle of a long jank frame, flutter_smooth will do preempt render. When doing preempt render, it needs to read and dispatch the pointer events, otherwise the UI will not respond to user fingers at all. 
 
@@ -10236,8 +10290,13 @@ If you need help, consider asking for advice on the #hackers-new channel on [Dis
 
 ### Provide fallback vsync target time for `window.render`
 
-*I will add tests and refine code etc (for example the unneeded memory copies) after some code review - since review may request changing the code :)*
-*This works pretty well in flutter_smooth, see https://github.com/fzyzcjy/engine/blob/flutter-smooth for full code.*
+
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
+
+---
+
 
 This works together with a few other PRs: https://github.com/flutter/engine/pull/36438 (to support multi render), https://github.com/flutter/engine/pull/36837 (which consumes vsync tagret time).
 
@@ -10323,6 +10382,14 @@ If you need help, consider asking for advice on the #hackers-new channel on [Dis
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113817" source="github" createTime="2022-10-21T07:14:04Z">
 
 ### Fix errors when using multiple build/pipeline owners
+
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
+
+---
+
+
 
 *This is a tentative PR. I will add tests if after code review.*
 
@@ -10413,6 +10480,12 @@ __Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/w
 
 ### Expose `Ticker.startTime` so users know the start time and the absolute time
 
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
+
+---
+
 Currently, the user of `Ticker` only knows the `elapsed` time. However, it looks reasonable to allow the user to know when the ticker thinks it *starts* ticking.
 
 If this does not wanted to be widely used, maybe we can mark it as `@protected` or `@visibleForTesting` or [`@experimental`](https://pub.dev/documentation/meta/latest/meta/experimental-constant.html).
@@ -10484,8 +10557,13 @@ If you need help, consider asking for advice on the #hackers-new channel on [Dis
 
 ### Allow `GestureBinding` subclasses to know `hitTest` information
 
-*I will add tests and refine code etc (for example the unneeded memory copies) after some code review - since review may request changing the code :)*
-*This works pretty well in flutter_smooth, see [fzyzcjy/engine@flutter-smooth](https://github.com/fzyzcjy/engine/blob/flutter-smooth) for full code.*
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
+
+---
+
+
 
 This PR allows the subclasses of `GestureBinding` to read the `hitTest` information. It is directly needed in flutter_smooth, because flutter_smooth has extra call to `dispatchEvent` and only execute those who are in auxiliary tree (and omit those in the main tree) during preempt render. I can copy-and-paste the content of `dispatchEvent` to mimic the behavior, but there is one missing piece: the hitTest information. By adding this PR, it can work.
 
@@ -10532,9 +10610,12 @@ __Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/w
 
 ### Enable a frame to be scheduled immediately
 
+1. I will finish code details, refine code, add tests, make tests pass, etc, after a code review that thinks the *rough idea* is acceptable. It is because, from my past experience, reviews may request changing a lot. If the general idea is to be changed, all detailed implementation efforts are wasted :)
+2. The PR has an already-working counterpart, and it produces ~60FPS smooth experimental results. The benchmark results and detailed analysis is in chapter https://cjycode.com/flutter_smooth/benchmark/. All the source code is in  https://github.com/fzyzcjy/engine/tree/flutter-smooth and https://github.com/fzyzcjy/flutter/tree/flutter-smooth.
+3. Possibly useful as a context to this PR, there is a whole chapter discussing the internals - how flutter_smooth is implemented. (Link: https://cjycode.com/flutter_smooth/design/)
 
-*I will add tests and refine code etc (for example the unneeded memory copies) after some code review - since review may request changing the code :)*
-*This works pretty well in flutter_smooth, see https://github.com/fzyzcjy/engine/blob/flutter-smooth for full code.*
+---
+
 
 This PR depends on the merging of https://github.com/flutter/engine/pull/36911.
 
@@ -10580,5 +10661,97 @@ It looks like this pull request may not have tests. Please make sure to add test
 If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
 
 __Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113927" source="github" createTime="2022-10-24T06:49:03Z">
+
+### Fix wasted memory caused by debug fields
+
+*NOTE: I am still doing experiments about this. Will update more results soon.*
+
+Consider the following example code. Code with "case A" occupies 2.5GB memory, while "case B" is 4.0GB memory.
+
+<details>
+
+```dart
+class C {
+  int? a;
+  int? b;
+
+  // int get computed => a.hashCode; // case A
+  int get computed => a.hashCode ^ b.hashCode; // case B
+}
+
+Future<void> main() async {
+  final arr = <C>[];
+  for (var i = 0; i < 100000000; ++i) {
+    arr.add(C()
+      ..a = 42
+      ..b = 100);
+  }
+  print('hash=${Object.hashAll(arr.map((e) => e.computed))}');
+
+  print('sleep...');
+  await Future<void>.delayed(const Duration(seconds: 10000));
+}
+```
+
+</details>
+
+Therefore, we know that, a field does not occupy memory if there is no read/write to it. For example, the field `b` in case A is never read, so Dart compiler seems so smart that it knows it can be eliminated and no memory is allocated for that. By the way, `b` is *written* even in case A, but seems memory is not allocated as long as it is not read. This agrees with common sense (but since I am not compiler expert, feel free to correct me if I am wrong!).
+
+For fields inside Flutter that is merely used for debug, they are usually accessed inside an `assert(() { ... }());` block. That is great, because if *each and every* field access are inside `assert`, those code will be eliminated in release build, and by discussions above, we will not pay memory for those *debug* fields.
+
+However, `AnimationController.debugLabel` does not seem to follow this. Inside `AnimationController.toStringDetails`, it uses `debugLabel` field *without* being inside a `assert` block. Therefore, IMHO, we will be paying the memory of debugLabel even if we never use that in runtime.
+
+As for why `toStringDetails` is guaranteed to be called, it is simple: `Animation.toString` calls that `toStringDetails`, and we know `toString` will not be tree shaken out.
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [ ] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/113927" source="github" createTime="2022-10-24T06:49:06Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/113927" source="github" createTime="2022-10-24T07:31:03Z">
+
+This pull request has been changed to a draft. The currently pending flutter-gold status will not be able to resolve until a new commit is pushed or the change is marked ready for review again.
+
+For more guidance, visit [Writing a golden file test for `package:flutter`](https://github.com/flutter/flutter/wiki/Writing-a-golden-file-test-for-package:flutter).
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+
 
 </DiscussionComment>
