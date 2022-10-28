@@ -9792,7 +9792,7 @@ __Reviewers__: Use caution before merging pull requests to branches other than m
 
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36822" source="github" createTime="2022-10-17T23:41:12Z">
 
-### Eliminate unsafe `memcpy` and duplicated code when dealing with pointer data
+### Eliminate duplicated code when dealing with pointer data
 
 Hope the PR is self-explanatory :) If needed I can explain it.
 
@@ -10389,11 +10389,7 @@ If you need help, consider asking for advice on the #hackers-new channel on [Dis
 
 ---
 
-
-
-*This is a tentative PR. I will add tests if after code review.*
-
-The current code change is the minimalist since I want to get some feedbacks. If you like, I can propose alternatives. For example, maybe we can create a method like the `_temporarilyRemoveDebugActiveLayout` and make that public instead.
+Close https://github.com/flutter/flutter/issues/114002
 
 We all know that, Flutter allows us to create our own `BuildOwner` and `PipelineOwner`, and here is even an official example: https://github.com/flutter/flutter/blob/master/examples/api/lib/widgets/framework/build_owner.0.dart. The doc also agrees with that. For example:
 
@@ -10438,6 +10434,187 @@ void _temporarilyRemoveDebugActiveLayout(VoidCallback f) {
 
 However, for this to work, the `debugActiveLayout` setter must be public.
 
+The most naive solution is to make it public, but that may violate encapsulation. Thus, in the proposed PR, I create a method to wrap that.
+
+### Reproduction code and output
+
+<details>
+
+```dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  testWidgets('When call PipelineOwner.flushPaint inside another PipelineOwner.flushLayout', (tester) async {
+    int onPerformLayoutCount = 0;
+    await tester.pumpWidget(_SpyLayoutBuilder(onPerformLayout: () {
+      onPerformLayoutCount++;
+
+      const Widget widget = ColoredBox(color: Colors.green, child: SizedBox(width: 100, height: 100));
+
+      // mimic https://github.com/flutter/flutter/blob/master/examples/api/lib/widgets/framework/build_owner.0.dart
+      final PipelineOwner pipelineOwner = PipelineOwner();
+      final MeasurementView rootView = pipelineOwner.rootNode = MeasurementView();
+      final BuildOwner buildOwner = BuildOwner(focusManager: FocusManager());
+      final RenderObjectToWidgetElement<RenderBox> element = RenderObjectToWidgetAdapter<RenderBox>(
+        container: rootView,
+        debugShortDescription: '[root]',
+        child: widget,
+      ).attachToRenderTree(buildOwner);
+
+      rootView.scheduleInitialLayout();
+      rootView.scheduleInitialPaint(TransformLayer(transform: Matrix4.identity())..attach(rootView));
+      buildOwner.buildScope(element);
+      pipelineOwner.flushLayout();
+      pipelineOwner.flushPaint();
+    }));
+
+    expect(onPerformLayoutCount, 1);
+  });
+}
+
+class MeasurementView extends RenderBox with RenderObjectWithChildMixin<RenderBox> {
+  @override
+  void performLayout() {
+    assert(child != null);
+    child!.layout(const BoxConstraints(), parentUsesSize: true);
+    size = child!.size;
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    print('hi ${describeIdentity(this)}.paint');
+    context.paintChild(child!, offset);
+  }
+
+  @override
+  bool get isRepaintBoundary => true;
+
+  @override
+  Rect get paintBounds => Offset.zero & size;
+
+  @override
+  void debugAssertDoesMeetConstraints() => true;
+}
+
+class _SpyLayoutBuilder extends SingleChildRenderObjectWidget {
+  final VoidCallback onPerformLayout;
+
+  const _SpyLayoutBuilder({required this.onPerformLayout});
+
+  @override
+  _RenderSpyLayoutBuilder createRenderObject(BuildContext context) => _RenderSpyLayoutBuilder(
+        onPerformLayout: onPerformLayout,
+      );
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderSpyLayoutBuilder renderObject) {
+    renderObject.onPerformLayout = onPerformLayout;
+  }
+}
+
+class _RenderSpyLayoutBuilder extends RenderProxyBox {
+  _RenderSpyLayoutBuilder({
+    required this.onPerformLayout,
+    RenderBox? child,
+  }) : super(child);
+
+  VoidCallback onPerformLayout;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    onPerformLayout();
+  }
+}
+```
+
+</details>
+
+yields
+
+<details>
+
+```shell
+00:08 +0: When call PipelineOwner.flushPaint inside another PipelineOwner.flushLayout                                                  
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during performLayout():
+RenderBox.size accessed beyond the scope of resize, layout, or permitted parent access. RenderBox
+can always access its own size, otherwise, the only object that is allowed to read RenderBox.size is
+its parent, if they have said they will. It you hit this assert trying to access a child's size,
+pass "parentUsesSize: true" to that child's layout().
+'package:flutter/src/rendering/box.dart':
+Failed assertion: line 2009 pos 13: 'debugDoingThisResize || debugDoingThisLayout ||
+_computingThisDryLayout ||
+              (RenderObject.debugActiveLayout == parent && size._canBeUsedByParent)'
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=2_bug.md
+
+The relevant error-causing widget was:
+  _SpyLayoutBuilder
+  _SpyLayoutBuilder:file:///Users/tom/Main/yplusplus/frontend/yplusplus/test/a.dart:9:29
+
+When the exception was thrown, this was the stack:
+#2      RenderBox.size.<anonymous closure> (package:flutter/src/rendering/box.dart:2009:13)
+#3      RenderBox.size (package:flutter/src/rendering/box.dart:2022:6)
+#4      MeasurementView.paintBounds (file:///Users/tom/Main/yplusplus/frontend/yplusplus/test/a.dart:53:41)
+#5      PaintingContext._repaintCompositedChild (package:flutter/src/rendering/object.dart:154:56)
+#6      PaintingContext.repaintCompositedChild (package:flutter/src/rendering/object.dart:98:5)
+#7      PipelineOwner.flushPaint (package:flutter/src/rendering/object.dart:1116:31)
+#8      main.<anonymous closure>.<anonymous closure> (file:///Users/tom/Main/yplusplus/frontend/yplusplus/test/a.dart:28:21)
+#9      _RenderSpyLayoutBuilder.performLayout (file:///Users/tom/Main/yplusplus/frontend/yplusplus/test/a.dart:86:20)
+#10     RenderObject.layout (package:flutter/src/rendering/object.dart:2135:7)
+#11     RenderBox.layout (package:flutter/src/rendering/box.dart:2418:11)
+#12     RenderView.performLayout (package:flutter/src/rendering/view.dart:170:14)
+#13     RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:1973:7)
+#14     PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:999:18)
+#15     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:1194:23)
+#16     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:378:5)
+#17     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1175:15)
+#18     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1104:9)
+#19     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1057:9)
+#22     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:71:41)
+#23     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1043:27)
+#24     WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:554:22)
+#27     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:71:41)
+#28     WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:551:27)
+#29     main.<anonymous closure> (file:///Users/tom/Main/yplusplus/frontend/yplusplus/test/a.dart:9:18)
+#30     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:171:29)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+
+The following RenderObject was being processed when the exception was fired: _RenderSpyLayoutBuilder#f19a8:
+  creator: _SpyLayoutBuilder ← [root]
+  parentData: <none>
+  constraints: BoxConstraints(w=800.0, h=600.0)
+  size: Size(800.0, 600.0)
+This RenderObject has no descendants.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:08 +0 -1: When call PipelineOwner.flushPaint inside another PipelineOwner.flushLayout [E]                                           
+  Test failed. See exception logs above.
+  The test description was: When call PipelineOwner.flushPaint inside another PipelineOwner.flushLayout
+  
+
+To run this test again: /Users/tom/fvm/versions/3.3.5/bin/cache/dart-sdk/bin/dart test /Users/tom/Main/yplusplus/frontend/yplusplus/test/a.dart -p vm --plain-name 'When call PipelineOwner.flushPaint inside another PipelineOwner.flushLayout'
+00:08 +0 -1: Some tests failed.                                  
+```
+
+</details>
+
+### Performance overhead
+
+Using compiler explorer, we can see that it does not generate worse assembly (as long as we use the prefer-inline pragma)
+
+https://godbolt.org/z/EoznoWex7
+
+![image](https://user-images.githubusercontent.com/5236035/197767410-b9b110cd-584e-4362-b2bf-c9c766ef44e2.png)
+
 
 ## Pre-launch Checklist
 
@@ -10445,9 +10622,9 @@ However, for this to work, the `debugActiveLayout` setter must be public.
 - [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
 - [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
 - [x] I signed the [CLA].
-- [ ] I listed at least one issue that this PR fixes in the description above.
+- [x] I listed at least one issue that this PR fixes in the description above.
 - [x] I updated/added relevant documentation (doc comments with `///`).
-- [ ] I added new tests to check the change I am making, or this PR is [test-exempt]. -- see above
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt]. -- see above
 - [ ] All existing and new tests are passing.
 
 If you need help, consider asking for advice on the #hackers-new channel on [Discord].
@@ -10520,7 +10697,7 @@ If you need help, consider asking for advice on the #hackers-new channel on [Dis
 
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113830" source="github" createTime="2022-10-21T11:53:27Z">
 
-### Fix bug that`timeDilation` is not reset, causing subsequent test errors
+### Fix bug that`timeDilation` is not reset, causing subsequent test errors, and add verifications to ensure such problem does not exist in the future
 
 Some tests set the time dilation to be non-one, but is not reset after the test ends. Thus, every test after it will see very weird time. I find this bug because got trapped in https://github.com/flutter/flutter/pull/113828.
 
@@ -10535,7 +10712,7 @@ The added line, `timeDilation = 1.0; // restore time dilation, or it will affect
 - [x] I listed at least one issue that this PR fixes in the description above.
 - [x] I updated/added relevant documentation (doc comments with `///`).
 - [x] I added new tests to check the change I am making, or this PR is [test-exempt].
-- [ ] All existing and new tests are passing.
+- [x] All existing and new tests are passing.
 
 If you need help, consider asking for advice on the #hackers-new channel on [Discord].
 
@@ -10666,9 +10843,11 @@ __Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/w
 
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113927" source="github" createTime="2022-10-24T06:49:03Z">
 
-### Fix wasted memory caused by debug fields
+### Fix wasted memory caused by debug fields - 16 bytes per object (when adding that should-be-removed field crosses double-word alignment)
 
-*NOTE: I am still doing experiments about this. Will update more results soon.*
+Close #113940
+
+## Theoretical analysis
 
 Consider the following example code. Code with "case A" occupies 2.5GB memory, while "case B" is 4.0GB memory.
 
@@ -10707,13 +10886,239 @@ However, `AnimationController.debugLabel` does not seem to follow this. Inside `
 
 As for why `toStringDetails` is guaranteed to be called, it is simple: `Animation.toString` calls that `toStringDetails`, and we know `toString` will not be tree shaken out.
 
+## Experimental analysis
+
+### Setup
+
+Use these code:
+
+<details>
+
+Need to add two dummy fields to AnimationController, such that it crosses the double-word alignment. (Yes, this PR does not affect memory for *today*'s AnimationController, but who can guarantee it never have two more fields or two less fields, which this PR will reduce 16 bytes).
+
+```dart
+class AnimationController {
+  int? dummy1;
+  int? dummy2;
+... old code ...
+}
+```
+
+Use this code
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final arr = <AnimationController>[];
+
+  @override
+  void initState() {
+    super.initState();
+    for (var i = 0; i < 2000000; ++i) arr.add(AnimationController(vsync: const TestVSync()));
+    print('${arr.first.dummy1} ${arr.first.dummy2}'); // ensure the dummy fields are not removed
+    arr.first
+      ..duration = const Duration(seconds: 1)
+      ..forward();
+  }
+
+  @override
+  Widget build(BuildContext context) => Container();
+}
+
+class TestVSync implements TickerProvider {
+  const TestVSync();
+
+  @override
+  Ticker createTicker(TickerCallback onTick) => Ticker(onTick);
+}
+```
+
+</details>
+
+### Operations
+
+1. `flutter build apk --extra-gen-snapshot-options='--print-object-layout-to=object_layout.json'` and look at json to know memory layout
+2. `flutter run --profile` to know memory consumption at runtime
+
+### Results
+
+#### Without PR
+
+96 bytes per object
+
+<details>
+
+```
+  {
+    "class": "AnimationController",
+    "size": 96,
+    "fields": [
+      {
+        "field": "dummy1",
+        "offset": 20
+      },
+      {
+        "field": "dummy2",
+        "offset": 24
+      },
+      {
+        "field": "lowerBound",
+        "offset": 28
+      },
+      {
+        "field": "upperBound",
+        "offset": 36
+      },
+      {
+        "field": "debugLabel",
+        "offset": 44
+      },
+      {
+        "field": "animationBehavior",
+        "offset": 48
+      },
+      {
+        "field": "duration",
+        "offset": 52
+      },
+      {
+        "field": "reverseDuration",
+        "offset": 56
+      },
+      {
+        "field": "_ticker",
+        "offset": 60
+      },
+      {
+        "field": "_simulation",
+        "offset": 64
+      },
+      {
+        "field": "_value",
+        "offset": 68
+      },
+      {
+        "field": "_direction",
+        "offset": 72
+      },
+      {
+        "field": "_status",
+        "offset": 76
+      },
+      {
+        "field": "_lastReportedStatus",
+        "offset": 80
+      }
+    ]
+  },
+```
+
+</details>
+
+and
+
+![image](https://user-images.githubusercontent.com/5236035/197549017-4166f28a-812c-42b4-b90d-e3b5258ca998.png)
+
+#### With this PR
+
+80 bytes per object
+
+<details>
+
+```
+  {
+    "class": "AnimationController",
+    "size": 80,
+    "fields": [
+      {
+        "field": "dummy1",
+        "offset": 20
+      },
+      {
+        "field": "dummy2",
+        "offset": 24
+      },
+      {
+        "field": "lowerBound",
+        "offset": 28
+      },
+      {
+        "field": "upperBound",
+        "offset": 36
+      },
+      {
+        "field": "animationBehavior",
+        "offset": 44
+      },
+      {
+        "field": "duration",
+        "offset": 48
+      },
+      {
+        "field": "reverseDuration",
+        "offset": 52
+      },
+      {
+        "field": "_ticker",
+        "offset": 56
+      },
+      {
+        "field": "_simulation",
+        "offset": 60
+      },
+      {
+        "field": "_value",
+        "offset": 64
+      },
+      {
+        "field": "_direction",
+        "offset": 68
+      },
+      {
+        "field": "_status",
+        "offset": 72
+      },
+      {
+        "field": "_lastReportedStatus",
+        "offset": 76
+      }
+    ]
+  },
+```
+
+</details>
+
+and
+
+![image](https://user-images.githubusercontent.com/5236035/197549096-2c9847c9-b17a-41df-9906-2b5ae1c9e798.png)
+
+
+### Conclusion
+
+16B reduce per object.
+
+#### Without PR
+
+
+
 ## Pre-launch Checklist
 
 - [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
 - [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
 - [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
 - [x] I signed the [CLA].
-- [ ] I listed at least one issue that this PR fixes in the description above.
+- [x] I listed at least one issue that this PR fixes in the description above.
 - [x] I updated/added relevant documentation (doc comments with `///`).
 - [ ] I added new tests to check the change I am making, or this PR is [test-exempt].
 - [ ] All existing and new tests are passing.
@@ -10753,5 +11158,949 @@ For more guidance, visit [Writing a golden file test for `package:flutter`](http
 __Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
 
 
+
+</DiscussionComment>
+
+<DiscussionComment author="jonahwilliams" link="https://github.com/flutter/flutter/issues/113927" source="github" createTime="2022-10-24T18:31:27Z">
+
+You'll need either a test or a test exception.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113927" source="github" createTime="2022-10-24T23:12:09Z">
+
+@jonahwilliams Thanks, sent https://discord.com/channels/608014603317936148/608018585025118217/1034242780857376799
+
+</DiscussionComment>
+
+<DiscussionComment author="Hixie" link="https://github.com/flutter/flutter/issues/113927" source="github" createTime="2022-10-24T23:15:36Z">
+
+test-exemption: optimization
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/113927" source="github" createTime="2022-10-24T23:39:30Z">
+
+auto label is removed for flutter/flutter, pr: 113927, due to - Please get at least one approved review if you are already a member or two member reviews if you are not a member before re-applying this label. __Reviewers__: If you left a comment approving, please use the "approve" review action instead.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/113927" source="github" createTime="2022-10-24T23:39:31Z">
+
+auto label is removed for flutter/flutter, pr: 113927, due to Validations Fail.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36985" source="github" createTime="2022-10-25T01:05:22Z">
+
+### Let `_debugCheckNotUsedAsOldLayer` provide hashcode in addition to runtime type
+
+I see this assert fail when working on my own app today (unrelated to flutter_smooth; work on stable channel). With identity hashcode, we can surely know more about which layer violates.
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide] and the [C++, Objective-C, Java style guides].
+- [ ] I listed at least one issue that this PR fixes in the description above.
+- [ ] I added new tests to check the change I am making or feature I am adding, or Hixie said the PR is test-exempt. See [testing the engine] for instructions on
+writing and running engine tests.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [
+- x] I signed the [CLA].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[C++, Objective-C, Java style guides]: https://github.com/flutter/engine/blob/main/CONTRIBUTING.md#style
+[testing the engine]: https://github.com/flutter/flutter/wiki/Testing-the-engine
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/engine/issues/36985" source="github" createTime="2022-10-25T01:05:24Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113987" source="github" createTime="2022-10-25T03:56:49Z">
+
+### Fix `addToScene` documentation
+
+Its return type is `void`, but doc says "return the engine layer", so I guess the doc is outdated.
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113988" source="github" createTime="2022-10-25T04:04:31Z">
+
+### [WIP] Fix `Layer ... was previously used as oldLayer`, caused by LeaderLayer addToScene bug
+
+Close https://github.com/flutter/flutter/issues/113995
+Please see the issue for a bug reproduction. Here I will discuss how it is solved and what caused it.
+
+## Pre-launch Checklist
+
+- [ ] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [ ] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [ ] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [ ] I signed the [CLA].
+- [ ] I listed at least one issue that this PR fixes in the description above.
+- [ ] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113998" source="github" createTime="2022-10-25T07:08:30Z">
+
+### `Layer ... was previously used as oldLayer` assertion error in debug mode, and page being blank in release mode, caused by LeaderLayer addToScene bug
+
+Close https://github.com/flutter/flutter/issues/113995
+Please see the issue for a bug reproduction. Here I will discuss how it is solved and what caused it.
+
+### The real world bug
+
+My app has a part of it not rendered (i.e. page blank) sometimes, which is very weird. After I manage to reproduce it in debug environment, the error is:
+
+<details>
+
+```
+======== Exception caught by scheduler library =====================================================
+The following assertion was thrown during a scheduler callback:
+Layer ClipRectEngineLayer was previously used as oldLayer.
+Once a layer is used as oldLayer, it may not be used again. Instead, after calling one of the SceneBuilder.push* methods and passing an oldLayer to it, use the layer returned by the method as oldLayer in subsequent frames.
+'dart:ui/compositing.dart':
+Failed assertion: line 88 pos 9: '<optimized out>'
+
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=2_bug.md
+
+When the exception was thrown, this was the stack: 
+#2      _EngineLayerWrapper._debugCheckNotUsedAsOldLayer (dart:ui/compositing.dart:88:9)
+#3      SceneBuilder.addRetained.<anonymous closure>.recursivelyCheckChildrenUsedOnce (dart:ui/compositing.dart:656:21)
+#4      List.forEach (dart:core-patch/growable_array.dart:416:8)
+#5      SceneBuilder.addRetained.<anonymous closure>.recursivelyCheckChildrenUsedOnce (dart:ui/compositing.dart:662:18)
+#6      SceneBuilder.addRetained.<anonymous closure> (dart:ui/compositing.dart:665:7)
+#7      SceneBuilder.addRetained (dart:ui/compositing.dart:668:6)
+#8      Layer._addToSceneWithRetainedRendering (package:flutter/src/rendering/layer.dart:643:15)
+#9      ContainerLayer.addChildrenToScene (package:flutter/src/rendering/layer.dart:1241:13)
+#10     OffsetLayer.addToScene (package:flutter/src/rendering/layer.dart:1378:5)
+#11     Layer._addToSceneWithRetainedRendering (package:flutter/src/rendering/layer.dart:646:5)
+#12     ContainerLayer.addChildrenToScene (package:flutter/src/rendering/layer.dart:1241:13)
+#13     OffsetLayer.addToScene (package:flutter/src/rendering/layer.dart:1378:5)
+#14     Layer._addToSceneWithRetainedRendering (package:flutter/src/rendering/layer.dart:646:5)
+#15     ContainerLayer.addChildrenToScene (package:flutter/src/rendering/layer.dart:1241:13)
+#16     EnhancedLeaderLayer.addToScene (package:flutter_portal/src/enhanced_composited_transform/flutter_src/rendering_layer.dart:159:5)
+#17     Layer._addToSceneWithRetainedRendering (package:flutter/src/rendering/layer.dart:646:5)
+#18     ContainerLayer.addChildrenToScene (package:flutter/src/rendering/layer.dart:1241:13)
+#19     EnhancedLeaderLayer.addToScene (package:flutter_portal/src/enhanced_composited_transform/flutter_src/rendering_layer.dart:159:5)
+#20     Layer._addToSceneWithRetainedRendering (package:flutter/src/rendering/layer.dart:646:5)
+#21     ContainerLayer.addChildrenToScene (package:flutter/src/rendering/layer.dart:1241:13)
+#22     EnhancedLeaderLayer.addToScene (package:flutter_portal/src/enhanced_composited_transform/flutter_src/rendering_layer.dart:159:5)
+#23     Layer._addToSceneWithRetainedRendering (package:flutter/src/rendering/layer.dart:646:5)
+#24     ContainerLayer.addChildrenToScene (package:flutter/src/rendering/layer.dart:1241:13)
+#25     EnhancedLeaderLayer.addToScene (package:flutter_portal/src/enhanced_composited_transform/flutter_src/rendering_layer.dart:159:5)
+#26     Layer._addToSceneWithRetainedRendering (package:flutter/src/rendering/layer.dart:646:5)
+#27     ContainerLayer.addChildrenToScene (package:flutter/src/rendering/layer.dart:1241:13)
+#28     OffsetLayer.addToScene (package:flutter/src/rendering/layer.dart:1378:5)
+#29     Layer._addToSceneWithRetainedRendering (package:flutter/src/rendering/layer.dart:646:5)
+#30     ContainerLayer.addChildrenToScene (package:flutter/src/rendering/layer.dart:1241:13)
+#31     TransformLayer.addToScene (package:flutter/src/rendering/layer.dart:1834:5)
+#32     ContainerLayer.buildScene (package:flutter/src/rendering/layer.dart:1054:5)
+#33     RenderView.compositeFrame (package:flutter/src/rendering/view.dart:231:37)
+#34     RendererBinding.drawFrame (package:flutter/src/rendering/binding.dart:517:18)
+#35     WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:884:13)
+#36     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:378:5)
+#37     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1175:15)
+#38     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1104:9)
+#39     SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1015:5)
+#40     _invoke (dart:ui/hooks.dart:148:13)
+#41     PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:318:5)
+#42     _drawFrame (dart:ui/hooks.dart:115:31)
+(elided 2 frames from class _AssertionError)
+====================================================================================================
+```
+
+</details>
+
+### The minimal reproduction
+
+(I will omit how I find out the root cause. If you are interested I can write down.)
+
+Please see https://github.com/flutter/flutter/issues/113995 with minimal reproduction code
+
+### Why that causes bug
+
+The first pumpWidget creates initial tree, and I deliberately set padding to non-zero, such that LeaderLayer.paint will see non-zero Offset, and thus will pushTransform.
+
+In the second pumpWidget, I deliberately set padding to zero. Then, LeaderLayer.paint will *not* call pushTransform. Correct implementation should set engineLayer to null, but the old code just leave that variable unchanged.
+
+Then comes the third pumpWidget. I change the color inside a RepaintBoundary which is the sibling of LeaderLayer (CompositedTransformTarget). This is carefully constructed (notice the sibling and the RepaintBoundary) to reproduce the following behavior in real-world complicated app: We should (1) ensure `LeaderLayer. _addToSceneWithRetainedRendering` is called, and (2) ensure `LeaderLayer. _needsAddToScene = false`. For example, if we do not add that RepaintBoundary, it will not construct the case, because CompositedTransformTarget's RO will repaint and thus _needsAddToScene becomes true.
+
+Then, interesting thing happens. Look at the code:
+
+```dart
+  void _addToSceneWithRetainedRendering(ui.SceneBuilder builder) {
+    if (!_needsAddToScene && _engineLayer != null) {
+      builder.addRetained(_engineLayer!);
+      return;
+    }
+    ...
+```
+
+We have constructed a case, such that the `if` is true. Notice that, if we fix the bug (just as what we do in the PR), the `engineLayer` will be null so if condition will not be true. Thus, buggy code will call `LeaderLayer.addRetained`, while correct code will not.
+
+Then the error happens. Notice that, this `LeaderLayer._engineLayer` indeed is the layer constructed in the second pumpWidget instead of the third (i.e. it is stale from last frame). Therefore, this EngineLayer's children are all from the stale previous frame. For example, the ClipRectLayer from previous frame (second pumpWidget). Since it has already been used as oldLayer in RenderClipRect, that old stale ClipRectLayer should never be used. However we are now using it in addRetained. Therefore, no wonder when `addRetained` is checking all subtree ensuring `_debugCheckNotUsedAsOldLayer`, it fails the assertions.
+
+### Why is the solution valid
+
+With analysis above, we can clearly see this solves the bug. In addition, looking at ClipRectLayer etc, they also have such "engineLayer = null" logic, so even if only mimicking those we should do this.
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/113998" source="github" createTime="2022-10-25T07:08:33Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113988" source="github" createTime="2022-10-25T07:08:46Z">
+
+Hmm it gets auto closed after I rename branch. Anyway please see https://github.com/flutter/flutter/pull/113998
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114003" source="github" createTime="2022-10-25T09:41:15Z">
+
+### Introduce debugWithActiveLayoutCleared to avoid duplicated code
+
+This is indeed a part of https://github.com/flutter/flutter/pull/113817. However, that one actually does two things in one PR: refactor internal code, and exposes an API. Thus, in order to follow the spirit mentioned in Flutter - one PR for only one thing - I make this refactor a separate PR, which should be easier to review.
+
+### Performance difference
+
+As is discussed in https://github.com/flutter/flutter/pull/113817#issue-1417868505 via compiler explorer, the generate assembly is not worse as long as we use that prefer-inline annotation.
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/114003" source="github" createTime="2022-10-25T12:00:24Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/113830" source="github" createTime="2022-10-25T22:16:37Z">
+
+`TestWidgetsFlutterBinding._verifyInvariants` could be the right place to check for this.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113830" source="github" createTime="2022-10-26T00:03:08Z">
+
+@Piinks Yes I think so, @goderbauer mentions the _verifyInvariants - the one I have seen a ton of times reporting I changed somthing (e.g. fake screen resolution) but do not change it back
+
+I will update soon.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113830" source="github" createTime="2022-10-26T00:21:02Z">
+
+done
+
+/cc @Piinks @goderbauer 
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36985" source="github" createTime="2022-10-26T00:28:15Z">
+
+The CI failure, "infra failed", does not look like a problem of my code indeed
+
+![image](https://user-images.githubusercontent.com/5236035/197906455-c997a800-12a0-4839-a038-d046e521006d.png)
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113830" source="github" createTime="2022-10-26T12:00:00Z">
+
+CI passes
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/113987" source="github" createTime="2022-10-26T20:39:34Z">
+
+Looks like this was changed in https://github.com/flutter/flutter/pull/36402, but we never updated the doc (cc @yjbanov).
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/112437" source="github" createTime="2022-10-26T21:05:48Z">
+
+> Please ignore this PR for now
+
+I am going to close this then for now to get it off the queue. Feel free to reopen when you can provide more context. 
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/112436" source="github" createTime="2022-10-26T21:26:11Z">
+
+In isolation, the API this exposes doesn't make a lot of sense to me and it feels hacky.
+
+If you chose to continue working on this PR, please also take another look at the flutter style guide, especially the sections around API documentation: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#documentation-dartdocs-javadocs-etc.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/flutter/issues/112436" source="github" createTime="2022-10-26T21:38:03Z">
+
+I'm still not quite clear on why this is a solution that should live in the framework.
+
+Tickers have no means of interrupting work more often. Tickers have no special knowledge of when vsync happens. This seems to introduce a number of problems that will be difficult for developers to reason about. I think this could be solved in a package instead. I'm going to close this for now but let's discuss more on discord if you like.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-10-26T22:12:20Z">
+
+Without this, how do you measure frame timings in profile mode?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113987" source="github" createTime="2022-10-26T23:10:44Z">
+
+> Looks like this was changed in https://github.com/flutter/flutter/pull/36402, but we never updated the doc (cc @yjbanov).
+
+I agree. That's why the PR happens :)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112437" source="github" createTime="2022-10-26T23:20:03Z">
+
+Sure, thanks!
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-10-26T23:28:54Z">
+
+> @dnfield Without this, how do you measure frame timings in profile mode?
+
+I personally by the timeline data. You know, look at the GPURasterizer::Draw rectangle inside timeline, etc.
+
+p.s. partially related https://github.com/flutter/devtools/issues/4522
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-10-26T23:31:40Z">
+
+> @goderbauer I find adding this a bit dubios. The environment flag will be really hard to discover.
+
+Hmm why are other env flags in flutter easy to discover, by adding doc or something else? I can do the same, then this is no problem.
+
+> Also, profile mode exists so you can get these kind of performance metrics out of your app.
+
+As mentioned above, these perf metrics are *already exposed* via the timeline data, such as by looking at GPURasterizer::Draw. 
+
+> If you don't want that, there's always release mode...
+
+But we need to do profiling to get profile data, don't we :)
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-10-26T23:32:50Z">
+
+Rephrase the problem: We are providing redundant data (i.e. report timing, even if timeline tracing already has the data), and that redundancy is causing measurable speed drop compared with release mode. Then we are biasing the profiling result.
+
+So, if this is not to be merged, maybe we should create another PR to the doc site, with something like: "Please do not believe the speed in profile mode. It will be measureably slower than release mode." But IMHO users will not like that sentence.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112436" source="github" createTime="2022-10-26T23:38:37Z">
+
+Thank you, I will reconsider the API and discuss on discord.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-10-27T00:15:59Z">
+
+Look like I can remove the environment variable.
+
+In Dart, if we have a normal variable that only has one constant value, then the field will be removed. https://github.com/dart-lang/sdk/issues/50287#issuecomment-1289027245 "Also AOT compiler is capable of removing unused fields of various kinds (the field is also effectively unused if it always contains the same constant value or is only written into, but never read)."
+
+The experiment confirms this:
+
+https://godbolt.org/z/Thd91YcPj
+
+![image](https://user-images.githubusercontent.com/5236035/198161917-503d91f2-47a2-4c71-8a89-9164f96f4c7c.png)
+
+I will update the code shortly.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114117" source="github" createTime="2022-10-27T00:20:49Z">
+
+### Fix incorrectly named "debug" prefix
+
+Close #111874
+
+Please read discussions there for why this PR is made :)
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/114117" source="github" createTime="2022-10-27T00:20:51Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114124" source="github" createTime="2022-10-27T03:06:12Z">
+
+### Avoid future bugs about wrong manipulation of engineLayer inside addToScene
+
+In https://github.com/flutter/flutter/pull/113998, I have fixed the bug caused by wrongly using engineLayer. But that bug is so time consuming to locate, so I write this PR to add assertions so we will not add such bugs in the future anymore.
+
+**Question**: In order to insert assertions, I have to wrap the `addToScene` function. IMHO the best thing is `addToScene` vs `performAddToScene` (like `layout` vs `performLayout` so everyone is familiar). However, that is a breaking change. I am not a googler so not sure whether you like it or not?
+IMHO the breaking change may be acceptable, because (1) it is merely a rename so simple to migrate (2) very few people write their own Layer class so this will affect few people.
+(Currently, I temporarily create a `addToSceneWrapped` method in order to see whether the code works - but I guess this should not be the final name)
+
+This assertion does work, because https://github.com/flutter/flutter/pull/114124/checks?check_run_id=9132589021 reports the following error, which is exactly the error that #113998 finds and fixes.
+
+```
+══╡ EXCEPTION CAUGHT BY SCHEDULER LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during a scheduler callback:
+When addToScene previously configures the engineLayer, it should either update it in current
+addToScene, or set it to null explicitly. Otherwise, Flutter framework may utilize that already
+out-of-date engineLayer and thus cause problems. However, it is observed that
+previousEngineLayer=TransformEngineLayer#38532153 while engineLayer=TransformEngineLayer#38532153.
+This originates in LeaderLayer#204442042.
+'package:flutter/src/rendering/layer.dart':
+Failed assertion: line 673 pos 9: 'previousEngineLayer == null || previousEngineLayer !=
+engineLayer'
+
+Either the assertion indicates an error in the framework itself, or we should provide substantially
+more information in this error message to help you determine and fix the underlying cause.
+In either case, please report this assertion by filing a bug on GitHub:
+  https://github.com/flutter/flutter/issues/new?template=2_bug.md
+
+When the exception was thrown, this was the stack:
+#2      Layer.addToSceneWrapped.<anonymous closure> (package:flutter/src/rendering/layer.dart:673:9)
+#3      Layer.addToSceneWrapped (package:flutter/src/rendering/layer.dart:683:6)
+#4      Layer._addToSceneWithRetainedRendering (package:flutter/src/rendering/layer.dart:701:5)
+#5      ContainerLayer.addChildrenToScene (package:flutter/src/rendering/layer.dart:1311:13)
+#6      OffsetLayer.addToScene (package:flutter/src/rendering/layer.dart:1448:5)
+#7      Layer.addToSceneWrapped (package:flutter/src/rendering/layer.dart:669:5)
+#8      Layer._addToSceneWithRetainedRendering (package:flutter/src/rendering/layer.dart:701:5)
+#9      ContainerLayer.addChildrenToScene (package:flutter/src/rendering/layer.dart:1311:13)
+#10     OffsetLayer.addToScene (package:flutter/src/rendering/layer.dart:1448:5)
+#11     Layer.addToSceneWrapped (package:flutter/src/rendering/layer.dart:669:5)
+#12     Layer._addToSceneWithRetainedRendering (package:flutter/src/rendering/layer.dart:701:5)
+#13     ContainerLayer.addChildrenToScene (package:flutter/src/rendering/layer.dart:1311:13)
+#14     TransformLayer.addToScene (package:flutter/src/rendering/layer.dart:1941:5)
+#15     Layer.addToSceneWrapped (package:flutter/src/rendering/layer.dart:669:5)
+#16     ContainerLayer.buildScene (package:flutter/src/rendering/layer.dart:1124:5)
+#17     RenderView.compositeFrame (package:flutter/src/rendering/view.dart:231:37)
+#18     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:1257:26)
+#19     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:375:5)
+#20     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1275:15)
+#21     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1204:9)
+#22     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1096:9)
+#25     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:71:41)
+#26     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1082:27)
+#27     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:618:53)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:71:41)
+#31     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:618:27)
+#32     main.<anonymous closure> (file:///b/s/w/ir/x/w/flutter/packages/flutter/test/widgets/autocomplete_test.dart:491:18)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 7 frames from class _AssertionError, dart:async, and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+```
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-10-27T16:22:20Z">
+
+> > @dnfield Without this, how do you measure frame timings in profile mode?
+> 
+> I personally by the timeline data. You know, look at the GPURasterizer::Draw rectangle inside timeline, etc.
+> 
+> p.s. partially related [flutter/devtools#4522](https://github.com/flutter/devtools/issues/4522)
+
+This method is significantly cheaper than the timeline.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/113998" source="github" createTime="2022-10-27T16:35:08Z">
+
+auto label is removed for flutter/flutter, pr: 113998, due to - Please get at least one approved review if you are already a member or two member reviews if you are not a member before re-applying this label. __Reviewers__: If you left a comment approving, please use the "approve" review action instead.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/113998" source="github" createTime="2022-10-27T16:35:09Z">
+
+auto label is removed for flutter/flutter, pr: 113998, due to Validations Fail.
+
+</DiscussionComment>
+
+<DiscussionComment author="chinmaygarde" link="https://github.com/flutter/engine/issues/36775" source="github" createTime="2022-10-27T20:17:43Z">
+
+cc @dnfield 
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36438" source="github" createTime="2022-10-27T20:18:50Z">
+
+Let's close this one out to get it off review queues until we have more consensus around the approach.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36607" source="github" createTime="2022-10-27T20:20:30Z">
+
+I'm going to close this to remove it from review queues. As I'm mentioning in some other PRs, let's discuss further on discord.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/engine/issues/36822" source="github" createTime="2022-10-27T21:07:46Z">
+
+auto label is removed for flutter/engine, pr: 36822, due to - Please get at least one approved review if you are already a member or two member reviews if you are not a member before re-applying this label. __Reviewers__: If you left a comment approving, please use the "approve" review action instead.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/engine/issues/36822" source="github" createTime="2022-10-27T21:07:47Z">
+
+auto label is removed for flutter/engine, pr: 36822, due to Validations Fail.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36826" source="github" createTime="2022-10-27T21:29:25Z">
+
+I started to review this, but then realized this seems to be at odds with some similar work that was done for iOS - see `pointer_data_dispatcher.h` and in particular the `SmoothPointerDataDispatcher`.
+
+I think you're on to something here, but I wonder if we should be looking at making the SmoothPointerDataDispatcher work on more than just iOS at this point (as in, perhaps some Android phones are now doing what iOS was doing w.r.t. pointer events and screen vsync being different). This approach does not currently seem to be compatible with that, and I have some concerns about thread safety around it (you're capturing `this` and posting it to a different task runner in an unsafe manner).
+
+I would suggest filing a specific bug for this issue with more details about which platform(s) you're observing this behavior on and how what you need is different from the SmoothPointerDataDispatcher (if it's different at all). If you're on Android, it would probably be worth doing an experiment where the smooth dispatcher is enabled there.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36837" source="github" createTime="2022-10-27T21:32:39Z">
+
+This approach is not passing tests and doesn't seem to be ready for review. It would need substantial reworking to be ready for review. I'm going to close this to get it off of review queues. 
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36911" source="github" createTime="2022-10-27T21:35:52Z">
+
+This seems very similar to https://github.com/flutter/engine/pull/29276
+
+Similar concerns as to that one: we need some motivating benchmarks that clearly show what benefits would be gained here, and we need to see that changes to this won't negatively impact existing benchmarks/users.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36912" source="github" createTime="2022-10-27T21:40:04Z">
+
+This removes backpressure from the rasterizer and will make the application run hotter than necessary in a lot of cases. It'd be nice to improve things here, but we can't completely remove that backpressure safely.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36916" source="github" createTime="2022-10-27T21:41:34Z">
+
+This is not the only thing that would need peeking,a nd creating this kind of "pull" based model is a major architectural change we'd need more time to reason about. I'm going to close this PR to get it off of review queues for now - tests are not passing and it is not clear that this API is the desirable one to expose to developers to achieve the larger goals you're discussing.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36985" source="github" createTime="2022-10-27T21:44:56Z">
+
+Also re-kicked the infra failure :)
+
+</DiscussionComment>
+
+<DiscussionComment author="Hixie" link="https://github.com/flutter/engine/issues/36985" source="github" createTime="2022-10-27T21:47:18Z">
+
+This would ideally be tested on the framework side, to make sure the output matches what we expect from other messages (we have a special matcher that knows how to normalize this kind of hash code).
+
+That can't be in this PR, though.
+
+test-exempt: test needs to be in another repo
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36921" source="github" createTime="2022-10-27T21:50:28Z">
+
+Same comment as on the linked PR applies.
+
+In particular, it's really hard to reason about how to use this parameter correctly. A lot of the work you're doing seems to be geared towards ignoring/overriding the vsync that the system gives us instead of cooperating with it more. 
+
+In particular, *vsync is an important source of backpressure that we must respect*. We cannot just keep shoving frames at the system compositor, we will overwhelm it and it will start dropping more frames than necessary/run into long GPU stalls. This will be really bad on older hardware, and still be bad on newer hardware.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36917" source="github" createTime="2022-10-27T21:52:33Z">
+
+Closing to remove from review queues.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/engine/issues/36985" source="github" createTime="2022-10-27T21:53:44Z">
+
+auto label is removed for flutter/engine, pr: 36985, due to - Please get at least one approved review if you are already a member or two member reviews if you are not a member before re-applying this label. __Reviewers__: If you left a comment approving, please use the "approve" review action instead.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/engine/issues/36985" source="github" createTime="2022-10-27T21:53:44Z">
+
+auto label is removed for flutter/engine, pr: 36985, due to Validations Fail.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36775" source="github" createTime="2022-10-27T21:57:31Z">
+
+@iskakaushik can you provide a secondary review here?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113987" source="github" createTime="2022-10-27T22:44:52Z">
+
+You are welcome!
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114003" source="github" createTime="2022-10-27T22:51:43Z">
+
+Hmm it still fails. I have seen this test failing across my PRs recently without reasons. let me bump ci
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-10-27T22:57:45Z">
+
+> @dnfield This method is significantly cheaper than the timeline.
+
+I originally thought so. But interestingly, seems no in a few reasons:
+
+* timeline is usually there (or even cannot be disabled? not find a flag to disable), while report timings is an extra thing
+* timeline makes app slower evenly, while report timings is a big burst. thus, flutter_smooth can handle timline slowness very easily (and still gets 60fps and smooth user feeling), while report timings will cause a jank (because it itself takes some long time and during that time flutter_smooth cannot perform any job to submit extra frames).
+
+---
+
+For disable tracing: Not see any flag to disable IMHO
+
+```
+flutter run --help | grep trace
+    --trace-startup                               Trace application startup, then exit, saving the trace to a file. By default, this will be saved in the "build" directory. If the FLUTTER_TEST_OUTPUTS_DIR environment variable is set, the file will be written there instead.
+    --endless-trace-buffer                        Enable tracing to an infinite buffer, instead of a ring buffer. This is useful when recording large traces. To use an endless buffer to record startup traces, combine this with "--trace-startup".
+    --trace-systrace                              Enable tracing to the system tracer. This is only useful on platforms where such a tracer is available (Android, iOS, macOS and Fuchsia).
+    --trace-skia                                  Enable tracing of Skia code. This is useful when debugging the raster thread (formerly known as the GPU thread). By default, Flutter will not log Skia code, as it introduces significant overhead that may affect recorded performance metrics in a misleading way.
+    --[no-]await-first-frame-when-tracing         Whether to wait for the first frame when tracing startup ("--trace-startup"), or just dump the trace as soon as the application is running. The first frame is detected by looking for a Timeline event with the name "Rasterized first useful frame". By default, the widgets library's binding takes care of sending this event.
+    --[no-]hot                                    Run with support for hot reloading. Only available for debug mode. Not available with "--trace-startup".
+```
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36822" source="github" createTime="2022-10-27T23:00:18Z">
+
+@dnfield Sure. 
+
+Btw if you guys think the cost paid by CHECK is ok, I will change DCHECK to CHECK (pretty easy to change)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36438" source="github" createTime="2022-10-27T23:03:46Z">
+
+All right...
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36607" source="github" createTime="2022-10-27T23:04:18Z">
+
+Thanks, I will discuss on discord about this
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36797" source="github" createTime="2022-10-27T23:05:16Z">
+
+Thanks for the reply, I will ask on discord later
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36834" source="github" createTime="2022-10-27T23:05:51Z">
+
+thanks, will discuss on discord further
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36826" source="github" createTime="2022-10-27T23:09:17Z">
+
+> but then realized this seems to be at odds with some similar work that was done for iOS - see pointer_data_dispatcher.h and in particular the SmoothPointerDataDispatcher.
+
+Looking at https://github.com/flutter/engine/blob/6368dee0d78f4345e6cfdc4541754acb0891d845/shell/common/pointer_data_dispatcher.h#L157, seems that SmoothPointerDataDispatcher is just delaying *one* packet. On the other hand, this PR tries to *merge* multiple packets into one bigger packet, so we do not pay extra cost of PostTask, call Dart, etc.
+
+> then realized this seems to be at odds with some similar work that was done for iOS - see pointer_data_dispatcher.h and in particular the SmoothPointerDataDispatcher.
+
+That one seems to be queueing 
+
+> (you're capturing this and posting it to a different task runner in an unsafe manner).
+
+This is just minor details and I will fix them definitely
+
+> I would suggest filing a specific bug for this issue with more details about which platform(s) you're observing this behavior on and how what you need is different from the SmoothPointerDataDispatcher (if it's different at all). If you're on Android, it would probably be worth doing an experiment where the smooth dispatcher is enabled there.
+
+Thanks I will do that
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-10-27T23:09:34Z">
+
+It'd be really helpful if you could share some measurements (including device/platform/runtime mode).
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36822" source="github" createTime="2022-10-27T23:10:03Z">
+
+CHECK will cause a crash at runtime. DCHECK is probably fine here to make tests fail.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36911" source="github" createTime="2022-10-27T23:12:04Z">
+
+Thanks for pointing out the related PR.
+
+> Similar concerns as to that one: we need some motivating benchmarks that clearly show what benefits would be gained here, and we need to see that changes to this won't negatively impact existing benchmarks/users.
+
+Sure. I will try to make one.
+
+> we need to see that changes to this won't negatively impact existing benchmarks/users.
+
+May I know how to do this? does not see benchmark data on CI IMHO
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36911" source="github" createTime="2022-10-27T23:13:08Z">
+
+flutter-flutter-perf.skia.org and flutter-engine-perf.skia.org has benchmark data
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36837" source="github" createTime="2022-10-27T23:16:37Z">
+
+@dnfield Btw I have replied to your review comments (not sure whether you can see that so also reply here)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36911" source="github" createTime="2022-10-27T23:18:08Z">
+
+@dnfield Thanks, may I know some doc, or how to see perf benchmark of a PR? Click "help" gives http://go/perf-user-doc which cannot be opened (google internal only?)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-10-27T23:19:53Z">
+
+@dnfield Let me find an old screenshot from my past experiment (https://github.com/fzyzcjy/yplusplus/issues/6124#issuecomment-1272830057)
+
+![image](https://user-images.githubusercontent.com/5236035/198415416-9f031194-2a32-431a-b4dd-48e26cffbc5b.png)
+![image](https://user-images.githubusercontent.com/5236035/198415425-17d13ad7-2857-4d23-aeed-7326719f6fad.png)
+![image](https://user-images.githubusercontent.com/5236035/198415432-c04f1b45-af6d-4e63-bef6-34bcb87e1f27.png)
+![image](https://user-images.githubusercontent.com/5236035/198415438-834760dd-79d7-42a8-bde5-ad3f1891bb78.png)
+
+after fix
+
+![image](https://user-images.githubusercontent.com/5236035/198415453-e5df85af-8711-4d4a-92ac-d593a55e2e6d.png)
+![image](https://user-images.githubusercontent.com/5236035/198415461-40f94d92-632a-44ac-bc8f-885b3c75e55c.png)
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36912" source="github" createTime="2022-10-27T23:21:01Z">
+
+@dnfield I agree. Will try to figure out some methods.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36916" source="github" createTime="2022-10-27T23:21:36Z">
+
+Ok I will discuss the pull model later maybe on discord
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36916" source="github" createTime="2022-10-27T23:22:00Z">
+
+Btw tests are deliberately not passed since I want to have a quick rough review first before working into details
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36921" source="github" createTime="2022-10-27T23:23:50Z">
+
+@dnfield I see
+
+> We cannot just keep shoving frames at the system compositor, we will overwhelm it and it will start dropping more frames than necessary/run into long GPU stalls. This will be really bad on older hardware, and still be bad on newer hardware.
+
+May I know a bit more details?
+
+By the way, this PR does not shoving too many frames. Indeed, it has one and exactly one rasterization ending (i.e. submit data to OS) in each vsync interval. Thus, it behaves exactly the same as a super-smooth app, which also provide one and exactly one data to system per vsync interval.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36917" source="github" createTime="2022-10-27T23:24:31Z">
+
+I see, will try to work towards the target
 
 </DiscussionComment>
