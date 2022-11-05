@@ -1,0 +1,1 @@
+{"source": "github", "metadata": {"org": "flutter", "repo": "engine", "issue": 37340}, "content": {"author": {"login": "fzyzcjy"}, "body": "Previous: https://github.com/flutter/engine/pull/36837", "comments": [], "createdAt": "2022-11-05T03:28:15Z", "title": "Fix jank and large-jumping frame by controlling rasterizer ending time (V2)"}}
