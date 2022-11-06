@@ -2,6 +2,688 @@
 
 import DiscussionComment from '@site/src/components/DiscussionComment';
 
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/76033" source="github" createTime="2021-02-15T02:40:41Z">
+
+### Correct the unit of file size from "kb" (maybe "kilo bits") to "KB"
+
+The error message when enabling "invert oversized images" tells us how many extra space the image uses. That is quite helpful! However, when I read `...an additional 1234kb...`I thought that means kilo *bits* (since in network programming `kb` and `kB` are definitely different and should be taken with care). However, after reading the source code, I suddenly realized that it is kilo *bytes*. Thus, this PR is here to ensure that people do not misunderstand the unit. 
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+Fixes https://github.com/flutter/flutter/issues/76032
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+N/A
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I added new tests to check the change I am making or feature I am adding, or Hixie said the PR is test-exempt.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I signed the [CLA].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/76033" source="github" createTime="2021-02-15T02:40:43Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need an exemption to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/76033" source="github" createTime="2021-02-18T01:11:47Z">
+
+@goderbauer Thanks! I only change 2 characters in a literal String, so I am a bit confused why it the tests are failed... I have looked at the CI logs, but seems no clues (since I am not very familiar with all the infrastructures of Flutter). Could you please give some hints?
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/76033" source="github" createTime="2021-02-18T01:13:49Z">
+
+There appear to be tests that verify the error message you're modifying. You can probably reproduce this locally by going into the `packages/flutter` directory and running `flutter test` there.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/76033" source="github" createTime="2021-02-18T01:22:55Z">
+
+@goderbauer Thanks! I will have a look
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/76033" source="github" createTime="2021-02-18T05:47:06Z">
+
+@goderbauer Hi all checks have passed!
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/76033" source="github" createTime="2021-02-18T11:56:31Z">
+
+Wait a bit... The flutter-build fails? Hours ago it was all green...
+
+Is that related to my PR or not? When I click "Details" I see a dashboard, which seems to have no relationship to me...
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/28707" source="github" createTime="2021-09-18T14:16:14Z">
+
+### Fix duplicated documentation
+
+Hi thanks for the lib! When reading doc, I find:
+
+> If multiple draw commands intersect with the clip boundary, this can result multiple draw commands intersect with the clip boundary, this can result in incorrect blending at the clip boundary.
+
+That sounds like a typo (duplicated doc line) so I fixed it ;)
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+N/A but I can create one
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+no
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide] and the [C++, Objective-C, Java style guides].
+- [x] I listed at least one issue that this PR fixes in the description above. -> see explanations
+- [x] I added new tests to check the change I am making or feature I am adding, or Hixie said the PR is test-exempt. See [testing the engine] for instructions on
+writing and running engine tests.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I signed the [CLA].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[C++, Objective-C, Java style guides]: https://github.com/flutter/engine/blob/master/CONTRIBUTING.md#style
+[testing the engine]: https://github.com/flutter/flutter/wiki/Testing-the-engine
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/engine/issues/28707" source="github" createTime="2021-09-18T14:16:15Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need an exemption to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/28707" source="github" createTime="2021-09-18T14:16:44Z">
+
+No tests needed - it changes the doc only
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/92745" source="github" createTime="2021-10-30T03:53:30Z">
+
+### Fix typo that is introduced in hotfix 2.5.x
+
+Well there is a typo when I examine [the hotfix 2.5.x](https://github.com/flutter/flutter/compare/2.5.0...2.5.3?diff=unified).
+
+Fix #92744
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-01-19T00:10:48Z">
+
+### Fixing bug when `ListenableEditingState` is provided `initialState` with a valid composing range, `android.view.inputmethod.BaseInputConnection.setComposingRegion(int, int)` has NPE
+
+*Replace this paragraph with a description of what this PR is changing or adding, and why. Consider including before/after screenshots.*
+See https://github.com/flutter/flutter/issues/96570
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+Fix https://github.com/flutter/flutter/issues/96570
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide] and the [C++, Objective-C, Java style guides].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I added new tests to check the change I am making or feature I am adding, or Hixie said the PR is test-exempt. See [testing the engine] for instructions on
+writing and running engine tests.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I signed the [CLA].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[C++, Objective-C, Java style guides]: https://github.com/flutter/engine/blob/main/CONTRIBUTING.md#style
+[testing the engine]: https://github.com/flutter/flutter/wiki/Testing-the-engine
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-01-19T00:10:50Z">
+
+This pull request was opened against a branch other than _main_. Since Flutter pull requests should not normally be opened against branches other than main, I have changed the base to main. If this was intended, you may modify the base back to master. See the [Release Process](https://github.com/flutter/flutter/wiki/Release-process) for information about how other branches get updated.
+
+__Reviewers__: Use caution before merging pull requests to branches other than main, unless this is an intentional hotfix/cherrypick.
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-01-19T00:10:52Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-01-19T00:10:52Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-01-19T00:42:51Z">
+
+Well cannot understand that CI error... Have searched keyword `ListenableEditingState` but no related things. The log seems also unrelated to my code change... Could anyone plz give some hints?
+
+Possibly related @chinmaygarde @darshankawar
+
+</DiscussionComment>
+
+<DiscussionComment author="jason-simmons" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-01-19T01:13:49Z">
+
+The "Linux Unopt" CI error is asking for a change to the code formatting
+(see https://logs.chromium.org/logs/flutter/buildbucket/cr-buildbucket/8824653695614065553/+/u/test:_format_and_dart_test/stdout)
+
+The "build_and_test_linux_unopt_debug" CI error is a flaky test that has been seen before (see https://github.com/flutter/flutter/issues/95751)
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-01-19T01:23:05Z">
+
+@jason-simmons thanks! done
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-01-20T00:27:11Z">
+
+You are welcome!
+
+</DiscussionComment>
+
+<DiscussionComment author="kobi666" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-01-21T00:22:43Z">
+
+@chinmaygarde 
+yo,
+so when can we expect this fix to reach stable?
+
+is there an HF version?
+
+</DiscussionComment>
+
+<DiscussionComment author="FabioPaganoAPSystem" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-02-03T23:58:28Z">
+
+In flutter version "2.10.0-stable" the bug seems not resolved, I've tested with my app.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/100300" source="github" createTime="2022-03-17T13:50:39Z">
+
+### Fix wrong documentation: There is no `LeaderLayer._lastOffset` anymore
+
+*Replace this paragraph with a description of what this PR is changing or adding, and why. Consider including before/after screenshots.*
+
+Seems that LeaderLayer has been refactored (#96144, #96486) and no more `_lastOffset` exists. So doc oudated.
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+
+Well this just fix code comments. If you need PR I can create one.
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [ ] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="skia-gold" link="https://github.com/flutter/flutter/issues/100300" source="github" createTime="2022-03-17T17:41:29Z">
+
+Gold has detected about 1 new digest(s) on patchset 1.
+View them at https://flutter-gold.skia.org/cl/github/100300
+
+</DiscussionComment>
+
+<DiscussionComment author="fluttergithubbot" link="https://github.com/flutter/flutter/issues/100300" source="github" createTime="2022-03-18T22:10:25Z">
+
+This pull request is not suitable for automatic merging in its current state.
+
+- Please get at least one approved review if you are already a member or two member reviews if you are not a member before re-applying this label. __Reviewers__: If you left a comment approving, please use the "approve" review action instead.
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fluttergithubbot" link="https://github.com/flutter/flutter/issues/100300" source="github" createTime="2022-03-18T23:30:17Z">
+
+This pull request is not suitable for automatic merging in its current state.
+
+- The status or check suite [Google testing](http://flutter-rob/#/flutter/premerge_prs?pr=100300) has failed. Please fix the issues identified (or deflake) before re-applying this label.
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/32133" source="github" createTime="2022-03-19T05:33:48Z">
+
+### Fix simple typo: `or or`
+
+*Replace this paragraph with a description of what this PR is changing or adding, and why. Consider including before/after screenshots.*
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+Seems no need for issue since just typo
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide] and the [C++, Objective-C, Java style guides].
+- [ ] I listed at least one issue that this PR fixes in the description above.
+- [x] I added new tests to check the change I am making or feature I am adding, or Hixie said the PR is test-exempt. See [testing the engine] for instructions on
+writing and running engine tests.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I signed the [CLA].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[C++, Objective-C, Java style guides]: https://github.com/flutter/engine/blob/main/CONTRIBUTING.md#style
+[testing the engine]: https://github.com/flutter/flutter/wiki/Testing-the-engine
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/engine/issues/32133" source="github" createTime="2022-03-19T05:33:50Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fluttergithubbot" link="https://github.com/flutter/engine/issues/32133" source="github" createTime="2022-03-21T19:10:12Z">
+
+This pull request is not suitable for automatic merging in its current state.
+
+- Please get at least one approved review if you are already a member or two member reviews if you are not a member before re-applying this label. __Reviewers__: If you left a comment approving, please use the "approve" review action instead.
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/100672" source="github" createTime="2022-03-24T05:23:58Z">
+
+### Fix `FollowerLayer` (`CompositedTransformFollower`) has null pointer error when using with some kinds of `Layer`s
+
+Please see https://github.com/flutter/flutter/issues/100670
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+Close #100670
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/100672" source="github" createTime="2022-03-24T05:24:00Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/100672" source="github" createTime="2022-03-24T05:24:32Z">
+
+Going to add tests, wait for a few minutes
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/100672" source="github" createTime="2022-03-24T05:36:45Z">
+
+Tests added
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/100684" source="github" createTime="2022-03-24T12:17:29Z">
+
+### Fix typo (again)
+
+*Replace this paragraph with a description of what this PR is changing or adding, and why. Consider including before/after screenshots.*
+Just fix a typo (again)... Making a PR and requesting flutter devs to review it sounds resource-consuming, so I wonder whether there any approach that is lighter when I only want to fix a typo?
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+none
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/100672" source="github" createTime="2022-03-25T05:47:56Z">
+
+/cc @chunhtai @goderbauer (not sure whom to cc so sorry if disturbing)
+
+</DiscussionComment>
+
+<DiscussionComment author="everskies" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-03-28T18:10:32Z">
+
+Would be great if this could be merged into stable! This is our most occurring issue at the moment
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-03-28T23:55:30Z">
+
+Given my understanding of flutter, seems that we need to wait until next stable (which is roughly 2 months later, unfortunately) if it is not in 2.10. Or, we may make a cherry-pick request
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-03-30T10:09:40Z">
+
+### Create `ImageFilter.dilate`/`ImageFilter.erode`
+
+*Replace this paragraph with a description of what this PR is changing or adding, and why. Consider including before/after screenshots.*
+Please see https://github.com/flutter/flutter/issues/100830
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+https://github.com/flutter/flutter/issues/100830
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide] and the [C++, Objective-C, Java style guides].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I added new tests to check the change I am making or feature I am adding, or Hixie said the PR is test-exempt. See [testing the engine] for instructions on
+writing and running engine tests.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I signed the [CLA].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[C++, Objective-C, Java style guides]: https://github.com/flutter/engine/blob/main/CONTRIBUTING.md#style
+[testing the engine]: https://github.com/flutter/flutter/wiki/Testing-the-engine
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-03-30T10:48:14Z">
+
+### (Test-only) Add tests for new `ImageFilter.dilate`/`ImageFilter.erode` in flutter engine
+
+*Replace this paragraph with a description of what this PR is changing or adding, and why. Consider including before/after screenshots.*
+Please see https://github.com/flutter/flutter/issues/100830
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+https://github.com/flutter/flutter/issues/100830
+
+Related: https://github.com/flutter/engine/pull/32334
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-03-30T10:49:42Z">
+
+This should fail until https://github.com/flutter/engine/pull/32334 is merged and flutter/flutter repo uses the latest flutter/engine.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-03-31T03:05:44Z">
+
+The error seems to be:
+
+```
+02:50 [32m+259[0m[33m ~6[0m[31m -1[0m: test/html/paragraph/bidi_golden_test.dart: bidi with selection (DOM) [1m[31m[E][0m[0m                                                                                                             
+  TimeoutException after 0:00:30.000000: Test timed out after 30 seconds. See https://pub.dev/packages/test#timeouts
+  /Users/chrome-bot/.pub-cache/hosted/pub.dartlang.org/test_api-0.4.1/lib/src/backend/invoker.dart 333:9   call
+  org-dartlang-sdk:///lib/async/zone.dart 1418:39                                                          _rootRun
+  org-dartlang-sdk:///lib/async/zone.dart 1327:34                                                          run
+  /Users/chrome-bot/.pub-cache/hosted/pub.dartlang.org/test_api-0.4.1/lib/src/backend/invoker.dart 331:5   _handleError
+  /Users/chrome-bot/.pub-cache/hosted/pub.dartlang.org/test_api-0.4.1/lib/src/backend/invoker.dart 326:8   _handleError
+  /Users/chrome-bot/.pub-cache/hosted/pub.dartlang.org/test_api-0.4.1/lib/src/backend/invoker.dart 287:9   call
+  org-dartlang-sdk:///lib/async/zone.dart 1426:12                                                          _rootRun
+  org-dartlang-sdk:///lib/async/zone.dart 1327:34                                                          run
+  /Users/chrome-bot/.pub-cache/hosted/pub.dartlang.org/test_api-0.4.1/lib/src/backend/invoker.dart 286:38  call
+  org-dartlang-sdk:///lib/_internal/js_runtime/lib/async_patch.dart 131:9                                  call
+  org-dartlang-sdk:///lib/_internal/js_runtime/lib/js_helper.dart 1818:14                                  invokeClosure
+  org-dartlang-sdk:///lib/_internal/js_runtime/lib/js_helper.dart 1852:1                                   <fn>
+  
+Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
+For example, 'pub run test --chain-stack-traces'.
+```
+
+Thus maybe unrelated to my PR?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-03-31T09:11:12Z">
+
+By the way, I see `25. Upload artifacts android-arm64-profile` in the CI. So I wonder where is the uploaded artifacts? I want to have a try on them to ensure they are really correct when used in my app.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-04-01T00:13:33Z">
+
+Hi, is there any updates?
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-04-01T06:08:41Z">
+
+There were some CI issues today or yesterday - not sure if they're resolved yet but might be worth just merging up to head and pushing a new commit to kick CI.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-04-01T09:50:53Z">
+
+@flar @dnfield It is green now!
+
+![image](https://user-images.githubusercontent.com/5236035/161240271-8dac9a1e-f9da-456b-abed-2cc054004c60.png)
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-04-02T01:43:15Z">
+
+Everything seems green now, what should I do next?
+
+![image](https://user-images.githubusercontent.com/5236035/161360721-68c70705-6f78-4eed-8394-10476dc042af.png)
+
+
+</DiscussionComment>
+
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101227" source="github" createTime="2022-04-02T05:45:54Z">
 
 ### [Proposal]Let Flutter run animations at 60fps even if there are heavy widgets, possibly using React Fiber-like or suspend-like algorithm?
@@ -24,6 +706,33 @@ I am interested in making contribution when having time as well.
 
 </DiscussionComment>
 
+<DiscussionComment author="flar" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-04-02T07:07:50Z">
+
+> Everything seems green now, what should I do next?
+> 
+> ![image](https://user-images.githubusercontent.com/5236035/161360721-68c70705-6f78-4eed-8394-10476dc042af.png)
+
+In general, we are moving to a state where all PRs have to use the "Waiting for tree to go green" label to get submitted. I seem to recall a requirement that developers need 2 approving reviews from authorized reviewers to be eligible to be pushed, but I don't see the checks asking for that. I'll add the label and see if it goes in.
+
+</DiscussionComment>
+
+<DiscussionComment author="flar" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-04-02T07:09:30Z">
+
+If the bot comes along and removes the label, then tag @dnfield to complete a review and then the label should work.
+
+Note that for now the tree is broken (the "luci-engine" failure in the list) so the label is currently in a wait state on that condition.
+
+</DiscussionComment>
+
+<DiscussionComment author="fluttergithubbot" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-04-02T07:11:05Z">
+
+This pull request is not suitable for automatic merging in its current state.
+
+- Please get at least one approved review if you are already a member or two member reviews if you are not a member before re-applying this label. __Reviewers__: If you left a comment approving, please use the "approve" review action instead.
+
+
+</DiscussionComment>
+
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101227" source="github" createTime="2022-04-02T08:22:05Z">
 
 > if I understand correctly you compare reconciling DOMs to rebuilding the elements in a widget tree
@@ -34,6 +743,26 @@ Possibly not only Widget build, but also layout, paint, etc. Since it is often t
 > give the developer the ability to set a widgets to low rendering priority
 
 Sounds reasonable.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-04-02T08:23:50Z">
+
+@flar I see.
+
+@dnfield Hi could you please approve this PR such that it can be merged?
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-04-04T02:52:05Z">
+
+Once the tree is open this should get landed by the bot. 
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/32334" source="github" createTime="2022-04-04T06:50:37Z">
+
+@dnfield Thank you
 
 </DiscussionComment>
 
@@ -75,6 +804,902 @@ To avoid reinventing the wheel, I hope to listen to the parts before thinking ab
 
 </DiscussionComment>
 
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-06T01:43:57Z">
+
+We know dilate/erode is not implemented for the web platform, just like the compose filter. So what should I do (skip tests when in web?)?
+
+```
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following UnimplementedError was thrown running a test:
+ImageFilter.dilate not implemented for web platform.
+
+When the exception was thrown, this was the stack:
+../dart-sdk/lib/_internal/js_dev_runtime/private/ddc_runtime/errors.dart 251:49  throw_
+../lib/ui/painting.dart 411:5                                                    dilate
+image_filter_test.dart.js 428:133                                                <fn>
+../dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 84:54            runBody
+../dart-sdk/lib/_internal/js_dev_runtime/patch/async_patch.dart 123:5            _async
+image_filter_test.dart.js 427:80                                                 <fn>
+../packages/flutter_test/src/matchers.dart.js 4522:19                            <fn>
+```
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-06T01:44:29Z">
+
+/cc @dnfield 
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-06T03:19:14Z">
+
+Skip these on web with a reference to the bug filed to implement them for web.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-06T03:56:01Z">
+
+Thanks, I will do that.
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-13T21:22:58Z">
+
+@fzyzcjy Can you update the tests per the suggestion above to make the checks happy?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-14T00:10:32Z">
+
+Sure. I forgot it
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-14T01:07:52Z">
+
+Golden file changes have been found for this pull request. Click [here to view and triage](https://flutter-gold.skia.org/cl/github/101036) (e.g. because this is an intentional change).
+
+If you are still iterating on this change and are not ready to resolve the images on the Flutter Gold dashboard, consider marking this PR as a draft pull request above. You will still be able to view image results on the dashboard, commenting will be silenced, and the check will not try to resolve itself until marked ready for review.
+
+
+
+For more guidance, visit [Writing a golden file test for `package:flutter`](https://github.com/flutter/flutter/wiki/Writing-a-golden-file-test-for-package:flutter).
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+_Changes reported for pull request #101036 at sha c39d7b80811c4903213d9559c764386ab26ada02_
+
+
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-20T21:34:51Z">
+
+@fzyzcjy Can you take a look at the golden images linked in the previous comment to confirm that that's what you expected them to look like? One of the images looks empty, which seems odd...
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-21T00:23:06Z">
+
+@goderbauer I guess it is right, just b/c it erodes too much. I have updated the test so it will be less strange.
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-21T01:04:39Z">
+
+Golden file changes are available for triage from new commit, Click [here to view](https://flutter-gold.skia.org/cl/github/101036).
+
+
+
+For more guidance, visit [Writing a golden file test for `package:flutter`](https://github.com/flutter/flutter/wiki/Writing-a-golden-file-test-for-package:flutter).
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+_Changes reported for pull request #101036 at sha e3d3659c4911cfa6caa84c6c3e5ec0b6cf69b146_
+
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-21T03:10:40Z">
+
+The gold looks better. (Notice it has very very thin lines)
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-21T16:06:14Z">
+
+Thanks, @fzyzcjy 
+
+@dnfield or @flar could you review this one (and also approve the goldens) since you reviewed the upstream PR in the engine?
+
+</DiscussionComment>
+
+<DiscussionComment author="flar" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-22T01:05:42Z">
+
+> Thanks, @fzyzcjy
+> 
+> @dnfield or @flar could you review this one (and also approve the goldens) since you reviewed the upstream PR in the engine?
+
+I still don't see anything rendered in the erode test even if I click on it to see it full size. Am I clicking on the wrong link?
+
+Actually, it looks like I was reviewing the goldens from before I requested a larger stroke width. Maybe they haven't been updated yet?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-22T01:09:51Z">
+
+> I still don't see anything rendered in the erode test even if I click on it to see it full size. Am I clicking on the wrong link?
+Actually, it looks like I was reviewing the goldens from before I requested a larger stroke width. Maybe they haven't been updated yet?
+
+I guess the CI is even not executed after modifying strokewidth...
+
+![image](https://user-images.githubusercontent.com/5236035/164576970-bb95b5bb-b435-43cc-85d9-262e91f03ec1.png)
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-22T01:10:38Z">
+
+I guess the failure (and seems skipped executing all tests related to golden) is not caused by me. So maybe need to wait
+
+</DiscussionComment>
+
+<DiscussionComment author="flar" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-22T01:24:12Z">
+
+> I guess the failure (and seems skipped executing all tests related to golden) is not caused by me. So maybe need to wait
+
+I mentioned it on the infra Discord chat to see if someone can poke it.
+
+</DiscussionComment>
+
+<DiscussionComment author="flar" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-22T01:24:48Z">
+
+I would just LGTM to let it merge, but I'm worried it may merge with bad goldens and cause problems down the line.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-22T01:52:23Z">
+
+Take your time. Since this is a test-only PR I am not that urgent :)
+
+</DiscussionComment>
+
+<DiscussionComment author="flar" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-22T21:54:20Z">
+
+It looks like you need to rebase in order to get the ci.yaml to gel with the latest CI recipes and then hopefully final goldens will be generated.
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-23T00:25:28Z">
+
+Golden file changes are available for triage from new commit, Click [here to view](https://flutter-gold.skia.org/cl/github/101036).
+
+
+
+For more guidance, visit [Writing a golden file test for `package:flutter`](https://github.com/flutter/flutter/wiki/Writing-a-golden-file-test-for-package:flutter).
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+_Changes reported for pull request #101036 at sha 692b2715bd2b0cc9b076228b007c7506cc7d25e6_
+
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-04-23T00:27:08Z">
+
+Now seems better
+
+</DiscussionComment>
+
+<DiscussionComment author="darrenaustin" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-05-03T23:41:44Z">
+
+Where the goldens for this approved? It looks like this is breaking the build:
+
+https://logs.chromium.org/logs/flutter/buildbucket/cr-buildbucket/8815144942697521329/+/u/run_test.dart_for_framework_tests_shard_and_subshard_widgets/test_stdout
+
+```
+The following _Exception was thrown while running async test code:
+Exception: Skia Gold received an unapproved image in post-submit
+testing. Golden file images in flutter/flutter are triaged
+in pre-submit during code review for the given PR.
+
+Visit https://flutter-gold.skia.org// to view and approve
+the image(s), or revert the associated change. For more
+information, visit the wiki:
+https://github.com/flutter/flutter/wiki/Writing-a-golden-file-test-for-package:flutter
+
+Debug information for Gold:
+stdout: Given image with hash 94028cfacbe41a55af47edcddeff6540 for test widgets.image_filter_erode
+Untriaged or negative image:
+https://flutter-gold.skia.org/detail?test=widgets.image_filter_erode&digest=94028cfacbe41a55af47edcddeff6540
+
+
+stderr: Test: widgets.image_filter_erode FAIL
+
+When the exception was thrown, this was the stack:
+#0      SkiaGoldClient.imgtestAdd (package:flutter_goldens_client/skia_client.dart:216:7)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+```
+
+Can we just approve the new goldens? If not I will need to revert this to get the tree green again.
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-05-04T00:46:54Z">
+
+I do not have permission to approve the goldens, but seems that @flar has said that the goldens are ok, and he may have permission to approve
+
+</DiscussionComment>
+
+<DiscussionComment author="darrenaustin" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-05-04T01:20:57Z">
+
+It looks like it has been resolved and the tree is green again, so it's all good now.
+
+</DiscussionComment>
+
+<DiscussionComment author="flar" link="https://github.com/flutter/flutter/issues/101036" source="github" createTime="2022-05-04T06:55:33Z">
+
+I did approve the goldens, so I'm not sure what happened.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-05-11T13:19:05Z">
+
+### Create `takeExceptionDetails` which is similar to `takeException` but allows the user to know details (e.g. stack trace)
+
+Please see https://github.com/flutter/flutter/issues/103487
+
+Close #103487
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-05-11T13:19:07Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-05-11T14:40:00Z">
+
+all tests passed.
+
+![image](https://user-images.githubusercontent.com/5236035/167876802-4ae2c2e3-b936-49de-8a16-fbd53fff1bc4.png)
+
+
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-05-12T22:19:28Z">
+
+What's the use case for needing that? What can you test now that you weren't able to test before?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-05-12T23:08:30Z">
+
+> What's the use case for needing that? What can you test now that you weren't able to test before?
+
+Not to test indeed, but to inform. Firstly, in https://github.com/fzyzcjy/flutter_convenient_test readme, there is a 1-minute video demonstrating how this open source lib looks like. Then you see this lib shows errors etc in the command panel in an intuitive way for the programmers. When talking about "errors", surely we want to show stack traces as well, but currently for errors like golden mismatch I have to use takeException and stacktrace is lost.
+
+Where this lib needs it: https://github.com/fzyzcjy/flutter_convenient_test/blob/f9d38c9fd870a5dab5a61755f66214b29caadf2f/packages/convenient_test_dev/lib/src/functions/command.dart#L99
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-05-16T01:42:29Z">
+
+👀 
+
+</DiscussionComment>
+
+<DiscussionComment author="apoleo88" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-05-24T10:43:33Z">
+
+Still get the error with:
+```
+Flutter 2.10.4 • channel stable 
+Tools • Dart 2.16.2 • DevTools 2.9.2
+```
+Specifically when I double-tap to select the text in a text field.
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-05-24T20:51:04Z">
+
+It is a little odd to expose that here and may lead to confusion in the API. Have you considered just overwriting `FlutterError.onError` in your framework yourself to catch the error directly?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-05-24T23:12:42Z">
+
+Well I hope to reuse the logic about Flutter errors in testing...
+
+</DiscussionComment>
+
+<DiscussionComment author="Piinks" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-06-16T00:00:33Z">
+
+(Triage) Hi @fzyzcjy, does @goderbauer's suggestion suit your needs? I do not know that we want to merge this given the previous comments.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-06-16T00:15:08Z">
+
+@Piinks Hi that does not suit. Btw `FlutterError.onError` cannot be rewritten outside a `widgetTest` since widgetTest overrides it again.
+
+</DiscussionComment>
+
+<DiscussionComment author="Piinks" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-06-16T20:32:44Z">
+
+> FlutterError.onError cannot be rewritten outside a widgetTest since widgetTest overrides it again
+
+I think that is by design. You can override it for the given test, or even use `setUp` to override it for a `group` of tests.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-06-16T23:10:49Z">
+
+> even use setUp to override it for a group of tests.
+
+That seems not possible, surprisingly. Because FlutterError.onError is overrided in `TestWidgetsFlutterBinding._runTest`, which seems to be run after all setup?
+
+</DiscussionComment>
+
+<DiscussionComment author="Piinks" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-06-22T22:04:37Z">
+
+Oh right. That is true! It looks like we usually set this in the given test.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-06-23T03:48:03Z">
+
+Yes, so it is not very convenient as we cannot do it in setup
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/103486" source="github" createTime="2022-06-29T22:34:44Z">
+
+We need to come up with another solution for this that doesn't require adding confusing API. This will need some more thinking. I suggest you describe what you want to achieve in an issue without proposing a concrete solution just yet.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-07-01T00:01:19Z">
+
+### Remove workaround since #66006 is fixed
+
+The comments say "@jiahaog Remove when https://github.com/flutter/flutter/issues/66006 is fixed." and that issue is already fixed
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+#66006
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="jiahaog" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-07-01T06:46:48Z">
+
+Thank you! Can you take a look at the test failures? I think you need to remove https://github.com/flutter/flutter/blob/1add0d790d78918a560387c23802afd2979d15d7/packages/integration_test/test/binding_test.dart#L126-L131
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-07-01T06:49:50Z">
+
+You are right. I have removed them. (I forgot to check the CI just now...)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-07-01T07:28:59Z">
+
+@jiahaog Now tests seem to pass
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-07-01T07:29:22Z">
+
+> only remove code (no modified or added lines) to remove a feature or remove dead code.
+
+So seems it is test-exempt
+
+</DiscussionComment>
+
+<DiscussionComment author="jiahaog" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-07-01T08:23:09Z">
+
+I ran a global presubmit (tap/458352815) for this change. This will require a g3fix internally.
+
+</DiscussionComment>
+
+<DiscussionComment author="jiahaog" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-07-01T08:27:44Z">
+
+Actually I'm not really sure why removing the repaint boundary results in a significant resize of the screenshot goldens. @dnfield can you take a quick look at shortn/_z3wWrukdZc?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-07-01T10:02:19Z">
+
+What is tap/458352815 and shortn/_z3wWrukdZc...? Is it some internal links that I cannot view?
+
+</DiscussionComment>
+
+<DiscussionComment author="jiahaog" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-07-01T15:00:17Z">
+
+Oh don't worry about it, yes it's an internal system for running tests :)
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-07-01T16:06:52Z">
+
+From what I recall, this needed some changes internally to pump widgets - cl/392929256
+
+</DiscussionComment>
+
+<DiscussionComment author="jiahaog" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-07-04T04:31:13Z">
+
+Ah thanks, I didn't realise that the fix (PR https://github.com/flutter/flutter/pull/88609) for issue https://github.com/flutter/flutter/issues/66006 was actually reverted in PR https://github.com/flutter/flutter/pull/88889 so the issue shouldn't be closed, and I completely forgot all about the discussion we had previously regarding this.
+
+Checking through internal tests failures again, it seems like this change causes some test to be especially flaky. This is not the same issue which caused it to be reverted though. I think the next step would be for us to investigate further to find out what is wrong with that test. We can track that on https://github.com/flutter/flutter/issues/66006, which I just reopened. Sorry about that!
+
+</DiscussionComment>
+
+<DiscussionComment author="gonzalonm" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-08-05T09:49:49Z">
+
+Looks like this fix has not been included in [stable channel](https://github.com/flutter/flutter/wiki/Hotfixes-to-the-Stable-Channel) yet. Does anybody know where it was included?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-08-05T10:23:34Z">
+
+@gonzalonm May I know where you see it not in stable? from the release date it should have been stable
+
+</DiscussionComment>
+
+<DiscussionComment author="gonzalonm" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-08-05T13:49:40Z">
+
+I didn't see it in the release notes. Anyways, I could not reproduce the issue with version `3.0.0`, so in that version it has been fixed.
+Thanks!
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/30916" source="github" createTime="2022-08-05T13:51:01Z">
+
+It may be in release notes of *engine*, while flutter/flutter repo (not flutter/engine) will not say this
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/109287" source="github" createTime="2022-08-10T05:54:50Z">
+
+### Fix that RenderEditable (TextField) ignores offset in painting, making text selections shifted when offset is nonzero
+
+**I will start adding tests once flutter team thinks this PR is acceptable, since I am not sure whether the team like to fix it, and if the team does not like it I will not waste time on it :)**
+
+---
+
+When implementing `RenderBox.paint`, we know we should respect the `offset` parameter. However, even though `_paintContents` respects it, the `_paintHandleLayers` does not - instead it completely ignores the offset parameter. This is logically wrong as it does not respect the definition and requirements of the function.
+
+Luckily (or unluckily), currently it does not have *visible* harm *yet*. This is because `RenderEditable` is used by `_Editable` and future by `EditableText`. And, the `_Editable`'s ancestors widgets do not provide any offset (because the widgets in the same Layer paint child without shifting). Thus, `offset` parameter is always zero in the *current* version of Flutter.
+
+However, I am still proposing this PR because of the following reasons:
+
+1. It is logically wrong (violates definition of `paint`), so by definition it is a bug and we should fix it.
+2. It may be a visible bug in future releases. With adding more functionality to text fields, surely we cannot guarantee RenderEditable's ancestors always give a zero offset. (If we think so, I should immediately raise another PR with `assert(offset==Offset.zero)` to enforce it.)
+3. Users who need deep customization may directly use `RenderEditable` (since it is public), and even copy some of the source code and hack it (e.g. me). With their customizations, it is highly possible that the offset is no longer always zero, then they will find suddenly the text selections shifted weirdly. (Disclaimer: That is my case, and why I find this bug)
+
+I have not come up with a way to make tests about this, because `_Editable` is private, and as mentioned above, it is logically wrong but not visible now.
+However, this PR does not add any new logic, so making existing tests pass IMHO may be sufficient.
+
+Close #109289
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+P.S. https://discord.com/channels/608014603317936148/608018585025118217/1006808038914654218
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/109287" source="github" createTime="2022-08-10T06:06:31Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/109287" source="github" createTime="2022-08-12T14:19:32Z">
+
+@justinmc Hi, as discussed by @Hixie at [here](https://discord.com/channels/608014603317936148/608018585025118217/1007426425126658159):
+
+> @Hixie : seems fine to me but @Justin McCandless (justinmc) is the person we should really ask
+
+So I wonder whether this PR is ok for you? If so I will spend time adding tests.
+
+</DiscussionComment>
+
+<DiscussionComment author="justinmc" link="https://github.com/flutter/flutter/issues/109287" source="github" createTime="2022-08-12T22:06:59Z">
+
+As discussed on Discord, the approach in this PR looks good to me.  Please tag me or request a review from me when you finish the tests.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/109287" source="github" createTime="2022-08-13T00:45:25Z">
+
+@justinmc New tests added and passed :)
+
+![image](https://user-images.githubusercontent.com/5236035/184461024-9bab123b-e907-44e9-856b-069ca47c47d8.png)
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/109287" source="github" createTime="2022-08-15T07:28:15Z">
+
+@justinmc Hi, is there any updates?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/109287" source="github" createTime="2022-08-16T06:47:15Z">
+
+All tests have passed
+
+![image](https://user-images.githubusercontent.com/5236035/184815098-fdc30f49-58f0-4532-8771-25fc2b55b3bc.png)
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/109750" source="github" createTime="2022-08-18T01:45:53Z">
+
+### gradlew/gradlew.bat should not be gitignored according to official doc
+
+Close https://github.com/flutter/flutter/issues/109749
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="jonahwilliams" link="https://github.com/flutter/flutter/issues/109750" source="github" createTime="2022-08-18T02:32:11Z">
+
+This is the repo's gitignore, not a template file gitignore.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/109750" source="github" createTime="2022-08-18T02:46:09Z">
+
+I know. The problem is, maybe flutter repo itself also need to follow gradle's official suggestion?
+
+</DiscussionComment>
+
+<DiscussionComment author="jonahwilliams" link="https://github.com/flutter/flutter/issues/109750" source="github" createTime="2022-08-18T02:52:23Z">
+
+We've done this historically because the tool can handle re-generating this and to avoid churn in the repo when the contents of this file changes. 
+
+</DiscussionComment>
+
+<DiscussionComment author="jonahwilliams" link="https://github.com/flutter/flutter/issues/109750" source="github" createTime="2022-08-18T16:42:31Z">
+
+I'm going to close this PR, as we don't intend to accept this change. If something changes we can always reconsider
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/109750" source="github" createTime="2022-08-18T22:51:33Z">
+
+I see. Thanks all the same
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/110131" source="github" createTime="2022-08-24T01:11:09Z">
+
+### Fix Image's logical flow which disposes its image too early, causing errors such as "Cannot clone a disposed image"
+
+Close #110129
+
+Please see the issue for paragraphs about the bug cause and fix etc
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-08-24T01:14:53Z">
+
+👀 Any updates here after two months? "workaround" does not sound very good so hoping it can be removed
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/110131" source="github" createTime="2022-08-24T02:01:02Z">
+
+The test, without the fix, fails. This verifies the PR is needed.
+
+https://logs.chromium.org/logs/flutter/buildbucket/cr-buildbucket/8804990179272978753/+/u/run_test.dart_for_framework_tests_shard_and_subshard_widgets/test_stdout
+
+```
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following StateError was thrown building KeyedSubtree-[#c5088]:
+Bad state: Cannot clone a disposed image.
+The clone() method of a previously-disposed Image was called. Once an Image object has been
+disposed, it can no longer be used to create handles, as the underlying data may have been released.
+
+When the exception was thrown, this was the stack:
+#0      Image.clone (dart:ui/painting.dart:1808:7)
+#1      RawImage.createRenderObject (package:flutter/src/widgets/basic.dart:5951:21)
+#2      RenderObjectElement.mount (package:flutter/src/widgets/framework.dart:5744:52)
+...     Normal element mounting (10 frames)
+#12     Element.inflateWidget (package:flutter/src/widgets/framework.dart:3883:16)
+#13     Element.updateChild (package:flutter/src/widgets/framework.dart:3606:20)
+#14     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:4920:16)
+#15     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5060:11)
+#16     Element.rebuild (package:flutter/src/widgets/framework.dart:4617:5)
+#17     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:2687:19)
+#18     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:1244:19)
+#19     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:374:5)
+#20     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1175:15)
+#21     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1104:9)
+#22     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1093:9)
+#25     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:71:41)
+#26     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1079:27)
+#27     WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:618:53)
+#30     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:71:41)
+#31     WidgetTester.pump (package:flutter_test/src/widget_tester.dart:618:27)
+#32     main.<anonymous closure> (file:///b/s/w/ir/x/w/flutter/packages/flutter/test/widgets/image_test.dart:83:20)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+
+02:21 +3329 ~2 -1: /b/s/w/ir/x/w/flutter/packages/flutter/test/widgets/image_test.dart: Verify Image does not use disposed handles [E]                                                                 
+  Test failed. See exception logs above.
+  The test description was: Verify Image does not use disposed handles
+  
+══╡ EXCEPTION CAUGHT BY WIDGET INSPECTOR ╞══════════════════════════════════════════════════════════
+```
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/110131" source="github" createTime="2022-08-24T03:04:53Z">
+
+All tests have passed
+
+![image](https://user-images.githubusercontent.com/5236035/186311411-4f587025-2553-4cb9-b0ef-eda7356c0c56.png)
+
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/flutter/issues/110131" source="github" createTime="2022-08-25T00:07:05Z">
+
+LGTM once tests are passing :)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/110131" source="github" createTime="2022-08-25T02:16:37Z">
+
+@dnfield Tests are passing :)
+
+![image](https://user-images.githubusercontent.com/5236035/186558824-8864aa0c-cad7-49ba-b164-d9d02424612f.png)
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/110131" source="github" createTime="2022-08-26T00:23:22Z">
+
+What should I do now 👀 
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/flutter/issues/110131" source="github" createTime="2022-08-26T00:32:39Z">
+
+Sorry, thought I had added the label!
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/110131" source="github" createTime="2022-08-26T00:32:57Z">
+
+- Please get at least one approved review if you are already a member or two member reviews if you are not a member before re-applying this label. __Reviewers__: If you left a comment approving, please use the "approve" review action instead.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/110131" source="github" createTime="2022-08-26T00:32:58Z">
+
+Validations Fail.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/110131" source="github" createTime="2022-08-26T00:36:33Z">
+
+@dnfield That's OK. Oops seems to need one more reviewer
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/110765" source="github" createTime="2022-09-01T08:00:30Z">
+
+### Improve performance by removing redundant null checks on hot paths
+
+As we know, `RenderObject.constraints` field is called frequently, because every `performLayout` usually reads that. However, by looking at the code, it seems that it is having a redundant null check, which reduces the performance.
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+Close https://github.com/flutter/flutter/issues/110764
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/110765" source="github" createTime="2022-09-01T08:00:55Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="Hixie" link="https://github.com/flutter/flutter/issues/110765" source="github" createTime="2022-09-01T08:23:54Z">
+
+Did you run any benchmarks by any chance to verify if this has any effect?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/110765" source="github" createTime="2022-09-01T08:57:31Z">
+
+@Hixie I have done some further experiments: Look into its assembly code. The Dart compiler is much smarter than I thought before - it generates completely the same assembly!
+
+https://godbolt.org/z/rKo77K5vn
+
+![image](https://user-images.githubusercontent.com/5236035/187874802-4b13a30f-48f9-4089-8c93-49e5f99e6268.png)
+
+
+</DiscussionComment>
+
 <DiscussionComment author="wangying3426" link="https://github.com/flutter/flutter/issues/101227" source="github" createTime="2022-09-08T02:57:10Z">
 
 @fzyzcjy Any update please? We are also interested in this feature.
@@ -86,6 +1711,116 @@ To avoid reinventing the wheel, I hope to listen to the parts before thinking ab
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101227" source="github" createTime="2022-09-08T03:06:09Z">
 
 @wangying3426 Well, no updates from me since I want to firstly listen to the "who have already started looking at parts of it @Hixie @goderbauer"
+
+</DiscussionComment>
+
+<DiscussionComment author="Hixie" link="https://github.com/flutter/flutter/issues/110765" source="github" createTime="2022-09-12T23:23:41Z">
+
+@fzyzcjy thanks for looking that deeply! That's awesome news.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/110765" source="github" createTime="2022-09-13T00:06:01Z">
+
+😄 
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/111522" source="github" createTime="2022-09-13T23:11:13Z">
+
+### Add my name to authors list
+
+Please see https://github.com/flutter/flutter/pull/90413#issuecomment-1245628544 for details :)
+
+I have made a few merged PRs, including several bug fixes in `flutter/flutter` and also a little feature in `flutter/engine` as well.
+
+*Replace this paragraph with a description of what this PR is changing or adding, and why. Consider including before/after screenshots.*
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [ ] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/111522" source="github" createTime="2022-09-13T23:15:04Z">
+
+auto label is removed for flutter/flutter, pr: 111522, due to - Please get at least one approved review if you are already a member or two member reviews if you are not a member before re-applying this label. __Reviewers__: If you left a comment approving, please use the "approve" review action instead.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/111522" source="github" createTime="2022-09-13T23:15:04Z">
+
+auto label is removed for flutter/flutter, pr: 111522, due to Validations Fail.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/111524" source="github" createTime="2022-09-13T23:26:25Z">
+
+### Link `debugVisitOnstageChildren` in `Offstage`
+
+The Offstage has strong relationship with debugVisitOnstageChildren: When using Offstage widget, the widget subtree of debugVisitOnstageChildren is changed, and widget testers will not find an offstage widget. In addition, when we are talking about the word "offstage", we may need to refer to both pages, because they have slightly different meanings.
+
+This origins partially from https://github.com/flutter/flutter/pull/111479#issuecomment-1245534877. Indeed, when talking about "offstage widgets", I quickly remembered and opened Offstage page, but never realize there is another page about debugVisitOnstageChildren, which even has a bit different explanation from Offstage. This PR fixes this problem.
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/111522" source="github" createTime="2022-09-13T23:26:59Z">
+
+Hmm seems to need one more PR approval...
 
 </DiscussionComment>
 
@@ -108,6 +1843,12 @@ No one has come up with a workable proposal at this point in time. I think it's 
 As mentioned earlier, I am willing to PR and contribute. But surely need some suggestions and discussions prior to start implementing :)
 
 Btw I am not thinking about strictly implementing Fiber, since web model is not the same as Flutter model, but something inspired by it that can make our animations smoother.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/111524" source="github" createTime="2022-09-15T00:10:00Z">
+
+@Piinks green now :)
 
 </DiscussionComment>
 
@@ -603,6 +2344,46 @@ So, will this have performance penalty or not?
 
 </DiscussionComment>
 
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36167" source="github" createTime="2022-09-15T13:37:39Z">
+
+### Fix typo
+
+Just fix 2 char typo... Hope there is a more lightweight method that creating a PR!
+
+*Replace this paragraph with a description of what this PR is changing or adding, and why. Consider including before/after screenshots.*
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide] and the [C++, Objective-C, Java style guides].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I added new tests to check the change I am making or feature I am adding, or Hixie said the PR is test-exempt. See [testing the engine] for instructions on
+writing and running engine tests.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I signed the [CLA].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[C++, Objective-C, Java style guides]: https://github.com/flutter/engine/blob/main/CONTRIBUTING.md#style
+[testing the engine]: https://github.com/flutter/flutter/wiki/Testing-the-engine
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101227" source="github" createTime="2022-09-15T14:41:50Z">
 
 Looking forward to some early feedbacks about the proposal :)
@@ -687,6 +2468,12 @@ This is just proof-of-concept and is very naive.
 * If a child under Suspendable mark itself as needed to relayout/rebuild, and there is relayout boundary between that child and Suspendable, then the suspending mechanism will not work at all.
 * Originally all code (implicitly) assume that, when a frame ends, build/didUpdateWidget has been called. But now this no longer holds. That will make a ton of widget fail to work, including those inside flutter framework, and many external packages. For example, those who assume this inside their addPostFrameCallback.
 * The demo does not yet provide any animations (e.g. a CircularProgressIndicator), so by merely looking at the screen, we cannot see it becomes much smoother ;)
+
+</DiscussionComment>
+
+<DiscussionComment author="rekire" link="https://github.com/flutter/flutter/issues/111522" source="github" createTime="2022-09-16T04:58:43Z">
+
+Just curious how many approved PR are required? I also fixed something in the engine
 
 </DiscussionComment>
 
@@ -969,6 +2756,93 @@ For example, a big problem: Originally all code (implicitly) assume that, when a
 
 </DiscussionComment>
 
+<DiscussionComment author="dnfield" link="https://github.com/flutter/flutter/issues/111522" source="github" createTime="2022-09-16T15:39:01Z">
+
+Just one is enough.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/111790" source="github" createTime="2022-09-16T23:25:10Z">
+
+### Fix UiKitView which wrongly unconditionally repaints
+
+### How the bug is found
+
+This bug is surely not found by human eyes reading each and every line of Flutter code :)
+
+I proposed the idea that a linter can be created (https://github.com/dart-code-checker/dart-code-metrics/issues/997) to validate whether RenderObject field setters have correct early-return code. @incendial implemented it and ran it (https://github.com/dart-code-checker/dart-code-metrics/pull/1003).
+
+Thus, thanks @incendial for implementing the linter and run it through flutter framework code!
+
+### Bug description
+
+As we know, when implementing a setter in RenderObject, we usually early halt if the new value is equal to the old value (such as [this one](https://github.com/flutter/flutter/blob/7fba37848c9f3007795be2d67a3207067b7a0894/packages/flutter/lib/src/rendering/platform_view.dart#L115), indeed almost all fields in RenderObject child classes are examples). This is very necessary, because we are setting fields in `updateRenderObject` *unconditionally*. If we do not early return, we will execute the full logic like markNeedsPaint and so on *unconditionally* on *every* `updateRenderObject`. That will be performance penalty.
+
+The current PR fixes one bug of such case. In more details, the `viewController` field setter lacks such early-return, and thus unconditionally calls markNeedsPaint. The setter is called from `updateRenderObject` as follows:
+
+![image](https://user-images.githubusercontent.com/5236035/190656619-8aae1809-81f7-475e-8786-73b260c6d3b5.png)
+
+And _UiKitPlatformView is used here:
+
+![image](https://user-images.githubusercontent.com/5236035/190656716-04152bb1-d791-4b0a-8b6a-31f72479ae02.png)
+
+In other words, the controller is not changed in every frame. Instead, in common cases, it should be the same one for many frames. However, it triggers repaint for each and every rebuild.
+
+Close #111788 
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/111790" source="github" createTime="2022-09-16T23:25:13Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/111790" source="github" createTime="2022-09-16T23:45:23Z">
+
+Test passes here.
+
+![image](https://user-images.githubusercontent.com/5236035/190831012-234ae33d-f37c-4e0a-99b9-bd80d69f269e.png)
+
+Without the fix, test fails:
+
+![image](https://user-images.githubusercontent.com/5236035/190831030-f94e8921-6473-464d-96a6-e92d49a4739a.png)
+![image](https://user-images.githubusercontent.com/5236035/190831125-e3fa19ff-6496-41fa-8a4f-6c421438c4c0.png)
+
+
+</DiscussionComment>
+
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/101227" source="github" createTime="2022-09-17T00:41:55Z">
 
 **Update**: I am thinking whether we can remove the need of new threads in https://github.com/flutter/flutter/issues/101227#issuecomment-1249005541. If we can pause a Dart isolate without needing new threads, we can remove those threads.
@@ -994,6 +2868,62 @@ I do get stuck. We have a ton of callbacks from C++ calling into Dart, such as w
 * 20220520, "hackers-performance-", with a pointer to "general" as previous discussions, https://discord.com/channels/608014603317936148/613398126367211520/977109431408009317
 
 Well I see some parts of my experiment above has already been discussed there
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/111790" source="github" createTime="2022-09-17T01:50:37Z">
+
+auto label is removed for flutter/flutter, pr: 111790, due to - Please get at least one approved review if you are already a member or two member reviews if you are not a member before re-applying this label. __Reviewers__: If you left a comment approving, please use the "approve" review action instead.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/111790" source="github" createTime="2022-09-17T01:50:38Z">
+
+auto label is removed for flutter/flutter, pr: 111790, due to Validations Fail.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/111790" source="github" createTime="2022-09-17T01:54:58Z">
+
+Oops seems to because need 2 approvals
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36230" source="github" createTime="2022-09-17T06:19:39Z">
+
+### Fix typo again
+
+Well I come again... Again fix one single word typo... Hope there exist a lighter method to do so!
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide] and the [C++, Objective-C, Java style guides].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I added new tests to check the change I am making or feature I am adding, or Hixie said the PR is test-exempt. See [testing the engine] for instructions on
+writing and running engine tests.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I signed the [CLA].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[C++, Objective-C, Java style guides]: https://github.com/flutter/engine/blob/main/CONTRIBUTING.md#style
+[testing the engine]: https://github.com/flutter/flutter/wiki/Testing-the-engine
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
 
 </DiscussionComment>
 
@@ -1342,6 +3272,57 @@ Btw, recent ideas:
 
 * I am considering halting the `paint` phase as well: Maybe we can directly reuse the old Layer, so we can get the same UI and at the same time do not call paint on subtree. This is just very naive idea and I will make an experiment later.
 * "for a scrolling list, the "finalizing" phase also takes time" - Maybe we can hack ListView itself, and control when it disposes its widgets.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/111849" source="github" createTime="2022-09-19T02:42:48Z">
+
+### Change type in `ImplicitlyAnimatedWidget` to remove type cast to improve performance and style
+
+Hi, hope to have a quick view whether this PR is acceptable or not? If yes I will add an issue and maybe ask for test-exempt.
+
+---
+
+*Replace this paragraph with a description of what this PR is changing or adding, and why. Consider including before/after screenshots.*
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [ ] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/111849" source="github" createTime="2022-09-19T12:58:40Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
 
 </DiscussionComment>
 
@@ -3377,6 +5358,271 @@ Not sure but maybe you have the same understanding as @JonahWilliams? This comme
 <DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1021987751710699632/1021998838363463690" source="discord" createTime="2022-09-21T04:18:30.886+00:00">
 
 I have replied to google doc (not see that just now)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112039" source="github" createTime="2022-09-21T06:54:27Z">
+
+### `PerformanceOverlay`'s multiple fields are not updated when the user wants to update it
+
+Close #112038. Please see description there.
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112040" source="github" createTime="2022-09-21T06:57:43Z">
+
+### Fix logical error in TimePickerDialog - the RenderObject forgets to update fields
+
+Close #112038. Please see description there.
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/112040" source="github" createTime="2022-09-21T06:57:45Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112041" source="github" createTime="2022-09-21T06:58:55Z">
+
+### Fix CupertinoAlertDialog and CupertinoActionSheet, which mis-behave when orientation changes
+
+Close #112038. Please see description there.
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112042" source="github" createTime="2022-09-21T06:59:48Z">
+
+### Fix SliverScrollingPersistentHeader not able to update stretchConfiguration
+
+Close #112038. Please see description there.
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112043" source="github" createTime="2022-09-21T07:00:29Z">
+
+### Fix SliverPinnedPersistentHeader, also not able to update stretchConfiguration and showOnScreenConfiguration
+
+Close #112038. Please see description there.
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112044" source="github" createTime="2022-09-21T07:01:05Z">
+
+### Add assertion to _CupertinoSwitchRenderObjectWidget, otherwise it is confusing why updateRenderObject omits state update
+
+Close #112038. Please see description there.
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/112044" source="github" createTime="2022-09-21T07:01:08Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112045" source="github" createTime="2022-09-21T07:01:41Z">
+
+### Fix RenderEditable not able to update backgroundCursorColor when the user provides a new one
+
+Close #112038. Please see description there.
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide], including [Features we expect every widget to implement].
+- [x] I signed the [CLA].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I added new tests to check the change I am making, or this PR is [test-exempt].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[test-exempt]: https://github.com/flutter/flutter/wiki/Tree-hygiene#tests
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[Features we expect every widget to implement]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo#features-we-expect-every-widget-to-implement
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
 
 </DiscussionComment>
 
@@ -5576,6 +7822,18 @@ oops, sorry https://github.com/flutter/flutter/issues/112197
 
 </DiscussionComment>
 
+<DiscussionComment author="Hixie" link="https://github.com/flutter/flutter/issues/112040" source="github" createTime="2022-09-22T22:26:49Z">
+
+would be good to have a test for this.
+
+</DiscussionComment>
+
+<DiscussionComment author="jonahwilliams" link="https://github.com/flutter/flutter/issues/112040" source="github" createTime="2022-09-22T22:33:18Z">
+
+Ahh my bad, I should have asked for a test for this one
+
+</DiscussionComment>
+
 <DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1021987751710699632/1022641922352881774" source="discord" createTime="2022-09-22T22:53:54.057+00:00">
 
 It is still a prototype :/
@@ -5630,6 +7888,14 @@ Sorry I cannot get it. In my proposal, they always see the same vsync signal. In
 > That's assuming we can figure out how to do the animation phase at all.
 
 Currently I plan *not* to do the animation phase indeed, and just use the builder callback.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112040" source="github" createTime="2022-09-22T23:15:15Z">
+
+@Hixie I have tried but failed, that is why this one has no tests though others have :/ It is so deep that it is hard to construct a test, without relaxing the code visibility of the widget/renderobjects.
+
+(I forget to ask for a test-preempt as well)
 
 </DiscussionComment>
 
@@ -5927,6 +8193,72 @@ https://user-images.githubusercontent.com/5236035/192124851-19bae792-ad31-4ae3-8
 <DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/608021234516754444/1023411181567868978" source="discord" createTime="2022-09-25T01:50:39.746+00:00">
 
 https://user-images.githubusercontent.com/5236035/192124851-19bae792-ad31-4ae3-8717-8a0821038d00.mp4
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36406" source="github" createTime="2022-09-26T02:44:43Z">
+
+### `VsyncWaiter` schedules unneeded extra `AwaitVSync` callbacks for one frame
+
+Consider the following sequence:
+
+* ScheduleSecondaryCallback(id1, callback1)
+* ScheduleSecondaryCallback(id2, callback2)
+
+Then, without this fix, the AwaitVSync will be called twice. Then, FireCallback will be called twice at the beginning of the next frame. But we know that FireCallback calls all primary and secondary callbacks, so being called twice just waste some computation resource.
+
+By the way, the following sequences are all ok without bugs:
+
+* AsyncWaitForVsync
+* ScheduleSecondaryCallback(id1)
+* ScheduleSecondaryCallback(id2)
+
+or
+
+* ScheduleSecondaryCallback(id1)
+* AsyncWaitForVsync
+* ScheduleSecondaryCallback(id2)
+
+*List which issues are fixed by this PR. You must list at least one issue.*
+https://github.com/flutter/flutter/issues/112439
+
+*If you had to change anything in the [flutter/tests] repo, include a link to the migration guide as per the [breaking change policy].*
+
+## Pre-launch Checklist
+
+- [x] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [x] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [x] I read and followed the [Flutter Style Guide] and the [C++, Objective-C, Java style guides].
+- [x] I listed at least one issue that this PR fixes in the description above.
+- [x] I added new tests to check the change I am making or feature I am adding, or Hixie said the PR is test-exempt. See [testing the engine] for instructions on
+writing and running engine tests.
+- [x] I updated/added relevant documentation (doc comments with `///`).
+- [x] I signed the [CLA].
+- [x] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[C++, Objective-C, Java style guides]: https://github.com/flutter/engine/blob/main/CONTRIBUTING.md#style
+[testing the engine]: https://github.com/flutter/flutter/wiki/Testing-the-engine
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/engine/issues/36406" source="github" createTime="2022-09-26T02:44:47Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
 
 </DiscussionComment>
 
@@ -7982,6 +10314,22 @@ do you mind filling a bug on that? We should figure out how to make that work...
 
 </DiscussionComment>
 
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/111849" source="github" createTime="2022-09-27T22:15:42Z">
+
+@fzyzcjy I believe this just needs a test (or probably just a test exemption) to land.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/111849" source="github" createTime="2022-09-27T22:37:19Z">
+
+@goderbauer I agree. Not sure how it can be tested though, so I will ask a test-exempt.
+
+I will do it maybe a few days later since I am working on https://github.com/flutter/flutter/issues/101227 (and on discord), and do not want to have too many things on discord in one day :)
+
+Thanks for your reply!
+
+</DiscussionComment>
+
 <DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/608021234516754444/1024451329030103060" source="discord" createTime="2022-09-27T22:43:50.226+00:00">
 
 Good morning/evening friends! Three (small) PRs are created yesterday, with tests and green CI: https://github.com/flutter/flutter/pull/112436, https://github.com/flutter/flutter/pull/112437, https://github.com/flutter/engine/pull/36438. May I get a little bit review 🙂
@@ -9263,6 +11611,12 @@ Thanks and 🎉 !
 
 </DiscussionComment>
 
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/111849" source="github" createTime="2022-10-10T17:51:11Z">
+
+@fzyzcjy Did you have a chance to look into testing this or applying for the test exception?
+
+</DiscussionComment>
+
 <DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/112778" source="github" createTime="2022-10-10T18:29:29Z">
 
 Any reason this is still marked as Draft?
@@ -9310,6 +11664,18 @@ test-exempt: API refactor
 
 </DiscussionComment>
 
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112040" source="github" createTime="2022-10-10T23:14:18Z">
+
+@Hixie So shall I relax the code visibility of the widgets and render objects (i.e. change from private to public) in order to have a test? If so I will add it.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/111849" source="github" createTime="2022-10-10T23:15:27Z">
+
+@goderbauer Ah I forgot it completely. Here is the exemption request a few seconds ago: https://discordapp.com/channels/608014603317936148/608018585025118217/1029170238190784704
+
+</DiscussionComment>
+
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112437" source="github" createTime="2022-10-10T23:18:30Z">
 
 Please ignore this PR for now, since in the https://github.com/fzyzcjy/flutter_smooth (i.e. impl of https://docs.google.com/document/d/1FuNcBvAPghUyjeqQCOYxSt6lGDAQ1YxsNlOvrUx0Gko/edit#), I am trying to use manual widgets as a workaround. So skip it is you are busy :)
@@ -9331,6 +11697,12 @@ I am still working on the "Preemption for 60FPS", i.e. flutter_smooth, currently
 <DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/608021234516754444/1029372886147944539" source="discord" createTime="2022-10-11T12:40:20.881+00:00">
 
 (Spoiler: It tries to solve the `hot update` problem)
+
+</DiscussionComment>
+
+<DiscussionComment author="Hixie" link="https://github.com/flutter/flutter/issues/111849" source="github" createTime="2022-10-11T18:19:00Z">
+
+test-exempt: code refactor with no semantic change
 
 </DiscussionComment>
 
@@ -9734,9 +12106,29 @@ __Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/w
 
 </DiscussionComment>
 
+<DiscussionComment author="Hixie" link="https://github.com/flutter/flutter/issues/112040" source="github" createTime="2022-10-17T22:40:09Z">
+
+Tests can actually get to the private classes, they just can't use the private class name. You can cast the render object to `dynamic` and can call things on it blindly.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112040" source="github" createTime="2022-10-17T23:02:26Z">
+
+@Hixie Thanks, but the problem is I cannot *construct* a `_CupertinoDialogRenderWidget` object. All its *current* usages does not cause this bug (but future usages may do), while this *is* a logical bug indeed (since by definition updateRenderObject should update the fields).
+
+</DiscussionComment>
+
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113433" source="github" createTime="2022-10-17T23:04:19Z">
 
 So... what should I do?
+
+</DiscussionComment>
+
+<DiscussionComment author="Hixie" link="https://github.com/flutter/flutter/issues/112040" source="github" createTime="2022-10-17T23:06:40Z">
+
+Ah, I see. Yeah, that's unfortunate. Probably fine to skip the test for now then.
+
+test-exempt: not technically changing actual behaviour.
 
 </DiscussionComment>
 
@@ -11520,6 +13912,12 @@ done
 
 </DiscussionComment>
 
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/111524" source="github" createTime="2022-10-26T00:25:06Z">
+
+Anyway this is not a big problem, so I will close it now since have a lot of other more important PRs remaining for me to improve :)
+
+</DiscussionComment>
+
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36985" source="github" createTime="2022-10-26T00:28:15Z">
 
 The CI failure, "infra failed", does not look like a problem of my code indeed
@@ -11914,6 +14312,18 @@ auto label is removed for flutter/engine, pr: 36985, due to Validations Fail.
 <DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/36775" source="github" createTime="2022-10-27T21:57:31Z">
 
 @iskakaushik can you provide a secondary review here?
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-10-27T21:59:32Z">
+
+Sorry, this should probably be closed. There is usage of this API internally in google that needs some reworking before this can be updated. Thank you for the effort!
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/106913" source="github" createTime="2022-10-27T22:20:39Z">
+
+You are welcome!
 
 </DiscussionComment>
 
@@ -12873,5 +15283,182 @@ Hi @iskakaushik may I know what previous work you have done? Thanks
 <DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113828" source="github" createTime="2022-11-05T05:52:18Z">
 
 So... What should I do now? I have already replied to all questions and it has been more than a week :)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36912" source="github" createTime="2022-11-05T06:20:26Z">
+
+@dnfield What about changing like this:
+
+https://github.com/flutter/engine/pull/37343
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/37343" source="github" createTime="2022-11-05T06:37:08Z">
+
+### Remove (3N-1) jank and big-jump when N rasterization misses deadline (V2)
+
+This PR is just a rough sketch. If it looks OK, I will polish (e.g. add tests, refine code etc)
+
+Previous:  https://github.com/flutter/engine/pull/36912
+
+Background: The original proposal completely removes back-pressure. Thus, suppose a rasterzation takes 1000ms, then we will be running ui thread unnecessarily for 60 times.
+
+Proposed new change: Maybe we should conditionally remove back-pressure. More specifically, when we see PipelineFull, we *only* ignore it and continue running ui thread under the following condition: The current ongoing rasterization has not been running for a long time. This condition holds for the figure in my previous comment, so the main scenario that this PR wants to solve is happy. On the other hand, for the "1000ms-long-rasterization" case, we will only waste one single ui pipeline computation, instead of 60 computations, so the waste does not look like a lot. I agree one waste is indeed waste, but it is the cost to pay (user battery consumes a tiny bit more) if we want to make the UI that user feels completely smooth at 60FPS (which is one of the goals of Flutter IMHO).
+
+Remark: Code comments also describe this as well.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36797" source="github" createTime="2022-11-05T07:17:20Z">
+
+> We don't want to expose this kind of internal of the VM to users.
+
+Hmm `NotifyIdle` seems very generic - there seems no VM internals, but only "hey I am idle for a period of time". It is not something like `NotifyDartToDoYoungGC` which is internals :) But instead, it is a well-defined interface so dev can tell flutter it is free.
+
+> Perhaps it would be more appropriate to expose a different API around whether an animation is occurring currently, although I think @iskakaushik has already done some work on that.
+
+Sorry but I do not quite get it. In flutter_smooth (detailed design: https://cjycode.com/flutter_smooth/design/), a janky frame can last for a long time (for convenience of description, suppose 100ms). Then, during this whole period, the Dart in UI thread will be busy, so it is impossible to execute any C++ code *unless* Dart code explicitly do so. With this PR, flutter_smooth will explictly call notifyIdle with an explicit deadline of ~14ms (much longer than classical Flutter). This is a bit like the pull vs push model problem.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36834" source="github" createTime="2022-11-05T07:29:01Z">
+
+> Same problems as the other NotifyIdle PR - these are details we don't want to expose to users.
+
+Same confusion as in https://github.com/flutter/engine/pull/36797. Still think "dev tells system it can be idle for a period of time" is not something internal but a reasonable thing.
+
+> NotifyIdle might not do anything, or it might do a lot more than the user expects.
+
+Totally agree - I have checked Dart NotifyIdle source code and saw it uses something like history data to guess how long GC will happen now, but it can run for longer or shorter time.
+
+As for this specific case of GC: If it does not do anything, there is surely no problem. If it do a lot more, it is still no problem. This is because, a much longer execution means that, even if we do not NotifyIdle, GC will happen somewhere in the future with at least this time duration (because garbage only accumulates).
+
+It is also like what we do with `sleep`. Dart (and all lang) have a `sleep` function and can specify how long to sleep. But as you have pointed out earlier, the thread may not be woken up at that time because of OS schedule. In other words, sleep may sleep a lot more than the user expects. Or, even consider this: Each and every line of Dart code (indeed Java/... as well), will have the possibility that, it takes much much longer time to finish! For example, needs 10ms to finish a single `i++`. This is just fact, not something that I make up - because we have the stop-the-world GC. When STW happens, the code just stuck. Furthermore, we know operating systems which Flutter targets schedule threads with preemption. Thus, it is totally possible that any line of code executes much longer than the user expects even if using C/C++/Rust/etc. So, shall we ban `sleep` from users if the same logic holds, or ban any language with GC, or ban any operating system that is not real-time ;) (Surely I am joking!)
+
+> In all honesty, it would be nice to get rid of it entirely since it is hard to reason about and seems to come out wrong very frequently. If users can change this arbitrarily it will make it much harder to reason about what's going on in an application.
+
+Sorry but do not get it.
+
+May I know a bit more details why "wrong very frequently"? IMHO it just "notifies it is idle" and the only way to be wrong is the user forgets it can run for a much longer time - then my discussions about sleep and STW GC holds.
+
+And I also wonder why "much harder to reason about what's going on in an application"? IMHO it is shown in the timeline, so it is quite clear what is going on. And this is indeed a Dart VM specific thing, so it is even not that related to Flutter framework and engine.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36921" source="github" createTime="2022-11-05T07:52:10Z">
+
+https://github.com/flutter/engine/pull/36921#issuecomment-1294116970
+
+> Same comment as on the linked PR applies.
+
+I have made a v2 of that PR: https://github.com/flutter/engine/pull/37341
+
+> In particular, it's really hard to reason about how to use this parameter correctly. A lot of the work you're doing seems to be geared towards ignoring/overriding the vsync that the system gives us instead of cooperating with it more.
+
+I agree, it is overriding the system vsync. However, this is used for flutter_smooth, which *really* has to override some things in the engine...
+
+Does it help if we mark it as `@experimental`? Then we can freely change it in the future without worrying potential users excluding flutter_smooth.
+
+P.S. Why this is needed: https://cjycode.com/flutter_smooth/design/infra/brake/
+
+> In particular, vsync is an important source of backpressure that we must respect. We cannot just keep shoving frames at the system compositor, we will overwhelm it and it will start dropping more frames than necessary/run into long GPU stalls. This will be really bad on older hardware, and still be bad on newer hardware.
+
+Replied above - IMHO seems not a problem?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36917" source="github" createTime="2022-11-05T08:00:22Z">
+
+> allowing the developer to specify the vsync time is a big footgun, the developer is very likely to get this wrong and overwhelm the system.
+
+If this API is for normal dev then I totally agree. So same as in the other reply - shall we mark it as "not suitable for normal dev" and mainly for flutter_smooth (and others who knows deeply about flutter)?
+
+> The direction of this information has to go in the opposite direction: we need to improve or make it easier for developers to understand the target vsync time and how much time they have left to do work rather than letting developers tell the system what they think vsync should be.
+
+That's perfect for the standard flutter, but IMHO may be impossible for flutter_smooth (e.g. https://cjycode.com/flutter_smooth/design/infra/preempt/idea). In flutter_smooth, there are just tons of long janky frame (e.g. say one frame takes 100ms), and flutter_smooth trigger a lot of *extra* window.render.
+
+Related: https://github.com/flutter/engine/pull/36438 - one onBeginFrame with multiple window.render.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/36607" source="github" createTime="2022-11-05T08:04:22Z">
+
+> It's not clear to me how this is any different from observing the Duration you get in onBeginFrame.
+
+In flutter_smooth, one janky frame can be (e.g.) 100ms, and we need to submit window.render per vsync interval. When is the next vsync interval? This question is answered by this PR.
+
+In other words, in the 100ms janky frame, onBeginFrame only provides first vsync target time, while we need to know the rest.
+
+> As I'm mentioning in some other PRs, let's discuss further on discord.
+
+Sure, will discuss when you have time (guess you are on weekends so reply here firstly)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112436" source="github" createTime="2022-11-05T08:19:36Z">
+
+> I'm still not quite clear on why this is a solution that should live in the framework.
+Tickers have no means of interrupting work more often. Tickers have no special knowledge of when vsync happens. This seems to introduce a number of problems that will be difficult for developers to reason about. I think this could be solved in a package instead. 
+
+Totally agree. However, I cannot find out a method to let it live in a package while making flutter_smooth implementable. flutter_smooth need to support AnimationController and everything built on it (CircularProgressIndicator, SlideTransition, ...), so it seems impossible to create a 3rd party package. Otherwise, at least users cannot use *any* builtin widget such as CircularProgressIndicator and higher-level widgets, as long as a widget directly or indirectly depends on AnimationController/TickerProviderMixin. Users also cannot use most of the other 3rd party packages, because they use Flutter's AnimationController/TickerProviderMixin as well.
+
+> I'm going to close this for now but let's discuss more on discord if you like.
+
+(Firstly reply here before discussing on Discord since I guess you are on weekends)
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/37341" source="github" createTime="2022-11-05T19:43:59Z">
+
+Part of the work to make this benchmark would be coming up with an at least somewhat realistic case where UI thread work goes to _just_ over vsync budget. Yes, you can construct a benchmark that does exactly that, but what's an example of a real application that actually behaves that way on a real device? IME, it's more common to see an application that _far_ exceeds budget on some frames and then is under budget on many other frames, rather than one that is consistently just _slightly_ over budget. In fact, if you had one that was consistently over budget, you should instead look to optimize your consistent workload to be less - it's an application problem rather than an engine one. But right now, we don't have good ways to fix the problem where some frames over budget _despite_ the fact that you're not doing anything all that unreasonble - for example, oyu're showing a screen full of text that can't all do its initial layout within frame budget on your target device.
+
+You should be able to run the devicelab benchmarks locally and do experiments before and after -see https://github.com/flutter/flutter/blob/master/dev/devicelab/README.md
+
+I'm closing this PR for the same reasons as the previous PR right now - it's not in a state that is ready for review, and much of this content might be more appropriate for an issue right now.
+
+
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/engine/issues/37343" source="github" createTime="2022-11-05T19:45:57Z">
+
+No, conditionally removing back-pressure is still bad: it will cause other problems for sure, since we're conditionally letting the CPU get ahead of the GPU. It'll just be harder to figure out when that's happening and fix it.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/37341" source="github" createTime="2022-11-05T21:58:20Z">
+
+@dnfield 
+
+> Yes, you can construct a benchmark that does exactly that, but what's an example of a real application that actually behaves that way on a real device? IME, it's more common to see an application that far exceeds budget on some frames and then is under budget on many other frames, rather than one that is consistently just slightly over budget.
+
+IMHO it is more like a math/statistics problem than a programming problem. Using my observation from previous issue (this problem happens as long as 2ms before deadline), and a vsync interval is 16.67ms. Then, for a very rough estimation, suppose the real time used is uniform from shortest time to longest time possible - this is very rough, but it somehow makes sense because an app targets from highest-end to lowest-end devices. Then, we have 2/16.67 = 12% probability. Surely that does not sound huge, but it does happen and affect user feeling. Indeed, my flutter_smooth's goal is 60FPS (on 60FPS machine) and this single problem drops 7.2FPS if using the above very rough analysis - and in reality I roughly see more drops.
+
+So, answering "it's more common to see..." - surely yes, but Flutter is a high-performance framework and wants to be 60FPS, instead of a framework that allows jank from time to time ;)
+
+>  In fact, if you had one that was consistently over budget, you should instead look to optimize your consistent workload to be less - it's an application problem rather than an engine one
+
+By the way, this bug is not only about "over budget" - if ui thread runs over 16.67ms (on 60hz machine) one can never get 60FPS (but can still be 60FPS with flutter_smooth - that's another story). In addition, a frame that is computed quicker than 16.67ms in one phone may be slower than 16.67ms on another lower end phone.
+
+> But right now, we don't have good ways to fix the problem where some frames over budget despite the fact that you're not doing anything all that unreasonble - for example, oyu're showing a screen full of text that can't all do its initial layout within frame budget on your target device.
+
+Indeed we have - flutter_smooth :) That example is indeed the first example that I have solved when prototyping (btw thanks for providing that example as a canonical test base!).
+(As long as all PRs are merged after discussions and modifications)
+
+> You should be able to run the devicelab benchmarks locally and do experiments before and after -see [flutter/flutter@master/dev/devicelab/README.md](https://github.com/flutter/flutter/blob/master/dev/devicelab/README.md?rgh-link-date=2022-11-05T19%3A43%3A59Z)
+> I'm closing this PR for the same reasons as the previous PR right now - it's not in a state that is ready for review, and much of this content might be more appropriate for an issue right now.
+
+I see, thanks (originally I used macrobenchmark folder directly)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/37343" source="github" createTime="2022-11-05T21:59:41Z">
+
+@dnfield 
+
+> it will cause other problems for sure, since we're conditionally letting the CPU get ahead of the GPU. It'll just be harder to figure out when that's happening and fix it.
+
+May I know a bit more about "other problems"? Because without knowing more, I have no idea what they are thus how to solve it.
 
 </DiscussionComment>
