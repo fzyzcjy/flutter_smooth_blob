@@ -15462,3 +15462,756 @@ I see, thanks (originally I used macrobenchmark folder directly)
 May I know a bit more about "other problems"? Because without knowing more, I have no idea what they are thus how to solve it.
 
 </DiscussionComment>
+
+<DiscussionComment author="pdblasi-google" link="https://github.com/flutter/flutter/issues/114467" source="github" createTime="2022-11-07T19:51:34Z">
+
+I like the goal of this (easier tests, less likely to make mistakes), but I have a couple of concerns with this as implemented:
+
+1. Does this _hide_ a problem, rather than addressing it?
+    * It's pretty common that `addTearDown` and `tearDown` calls are missed as you pointed out in your description. This PR makes it easier to not miss those calls for a few specific cases, but it doesn't really address _why_ those calls are missed or drive users to write better tests in other cases.
+2. Does adding these methods here set a standard that the testing framework will be expected to stick to elsewhere?
+    * How do we determine which properties or fields should/shouldn't have versions that auto clear?
+    * How should adding those auto clear versions be prioritized?
+    * If/when those versions break, should it be considered a breaking change and should the breaking change process be followed for just the auto clear version, or for auto clear and standard versions?
+3. Will this cause unintuitive behavior in other use cases?
+    * Specifically I'm thinking of someone trying to use this for setting up a `group` of tests. Since this makes use of `addTearDown`, it'll only behave as expected for individual tests. If someone tries to use the "AutoClear" version in a group, it'll throw an exception.
+    * In combination with number 2, would any "AutoClear" versions also need an "AutoClearGroup" version?
+
+Personally, I'd lean towards pushing the convenience method part to a separate package where the expectations for support, maintenance, and coverage won't be as high. It'd also allow for more community contributions for different conveniences and extensions to be added without needing to go through as much process as this repo requires. As for the fixes to our own tests, it's a great catch and should be included, but IMO without using the convenience method.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114467" source="github" createTime="2022-11-07T23:24:50Z">
+
+@Renzo-Olivares @justinmc done :)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114467" source="github" createTime="2022-11-07T23:31:54Z">
+
+@pdblasi-google 
+
+> Does this hide a problem, rather than addressing it?
+It's pretty common that addTearDown and tearDown calls are missed as you pointed out in your description. This PR makes it easier to not miss those calls for a few specific cases, but it doesn't really address why those calls are missed or drive users to write better tests in other cases.
+
+So what do you think is the reason "why those calls are missed"? I indeed am not sure - maybe because they just forget?
+
+> Does adding these methods here set a standard that the testing framework will be expected to stick to elsewhere?
+How do we determine which properties or fields should/shouldn't have versions that auto clear?
+
+For fields that have a `set somethingTestValue` and `clearSomethingTestValue` I guess?
+
+> How should adding those auto clear versions be prioritized?
+
+IMHO this is quite trivial to implement (if you like I can submit more)
+
+> If/when those versions break, should it be considered a breaking change and should the breaking change process be followed for just the auto clear version, or for auto clear and standard versions?
+
+Sorry, not sure about the question
+
+> Will this cause unintuitive behavior in other use cases?
+Specifically I'm thinking of someone trying to use this for setting up a group of tests. Since this makes use of addTearDown, it'll only behave as expected for individual tests. If someone tries to use the "AutoClear" version in a group, it'll throw an exception.
+In combination with number 2, would any "AutoClear" versions also need an "AutoClearGroup" version?
+
+Luckily, not a problem! If you like I can put the following code which automatically uses addTearDown vs tearDown and is used internally in my app:
+
+```dart
+void autoSetUpTearDownOrAddTearDownSync(
+  void Function() setUpBody,
+  void Function() tearDownBody,
+) {
+  // ref: test_api :: test_structure.dart :: addTearDown
+  // `Invoker.current==null` will lead to a message `addTearDown() may only be called within a test.`
+  // so use this to determine whether in test
+  if (Invoker.current == null) {
+    setUp(setUpBody);
+    tearDown(tearDownBody);
+  } else {
+    setUpBody();
+    addTearDown(tearDownBody);
+  }
+}
+```
+
+</DiscussionComment>
+
+<DiscussionComment author="pdblasi-google" link="https://github.com/flutter/flutter/issues/114467" source="github" createTime="2022-11-08T21:31:57Z">
+
+@fzyzcjy
+
+Personally, I think those calls are missed because they aren't made obvious to users through documentation and examples.  As such, I'm not sure hiding those calls behind convenience methods promotes better usage of those methods.
+
+Adding the convenience methods _also_ increases our API surface, which increases our maintenance burden, and sets up expectations for other parts of the testing framework that don't actually _solve_ the problem of those methods being missed, but instead makes it even less likely that users will run into an example using them correctly.
+
+Long story short, I don't think the convenience methods are worth the long term cost of introducing that pattern to the framework. Hence suggesting creating a package for them, where the maintenance costs and coverage expectations are going to be lower.
+
+It's also worth noting that there's work at the moment to move from a single window to multiple views (to support desktop better), which may be a great opportunity to improve on these particular fields' APIs from the ground up. I believe @goderbauer is driving that initiative, though he's out until next Tuesday.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114467" source="github" createTime="2022-11-08T22:25:29Z">
+
+@pdblasi-google 
+
+> Personally, I think those calls are missed because they aren't made obvious to users through documentation and examples.
+
+Not sure how other people do, but I am not this case personally. I have this simply because I forgot to call the clear :/ I do vaguely remember the clear, and if you test me in a questionaire I will remember it, but when programming I just set the value - doing the minimal necessary work - while forgetting the clear.
+
+> Hence suggesting creating a package for them
+
+Then what should we do for the flutter framework itself? Or shall we mark them `@internal` so flutter framework can use it?
+
+> It's also worth noting that there's work at the moment to move from a single window to multiple views (to support desktop better), which may be a great opportunity to improve on these particular fields' APIs from the ground up. I believe @goderbauer is driving that initiative, though he's out until next Tuesday.
+
+Looks interesting!
+
+</DiscussionComment>
+
+<DiscussionComment author="pdblasi-google" link="https://github.com/flutter/flutter/issues/114467" source="github" createTime="2022-11-08T22:37:43Z">
+
+If the convenience methods are moved to a package, I would suggest just not using them in the flutter repo and updating the tests here to use the `addTearDown` methods where appropriate to clear the values. That way, those tests can serve as an example of how to use the standard `addTearDown` pattern.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114467" source="github" createTime="2022-11-08T22:43:07Z">
+
+> not using them in the flutter repo*
+
+Then the tests are not DRY ;)
+
+</DiscussionComment>
+
+<DiscussionComment author="pdblasi-google" link="https://github.com/flutter/flutter/issues/114467" source="github" createTime="2022-11-08T22:58:52Z">
+
+> Then the tests are not DRY ;)
+
+I mean, if you want to get the tests _really_ DRY, then the setup/teardown would be moved out to the `group` level and done either once for the entire group, or set up to happen before and after each test with the group level methods.
+
+Since we're working on a public API though, we don't necessarily _want_ to be DRY on everything. We have to balance trying to keep our internal stuff as clean as we can with not making the API too specific to our internal use cases.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114467" source="github" createTime="2022-11-08T23:01:58Z">
+
+> then the setup/teardown would be moved out to the group level and done either once for the entire group
+
+Well, those tests are not in the same file, so IMHO they cannot be solved by `group`.
+
+> Since we're working on a public API though, we don't necessarily want to be DRY on everything. We have to balance trying to keep our internal stuff as clean as we can with not making the API too specific to our internal use cases.
+
+I see. Btw, it is not "too specific to our internal use cases" as it is used everyday by external users
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039694951103090769" source="discord" createTime="2022-11-09T00:16:32.941+00:00">
+
+
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039694953443500103" source="discord" createTime="2022-11-09T00:16:33.499+00:00">
+
+Yes! I think there are a number of things (sorry, I've been in meetings)
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039695078609928262" source="discord" createTime="2022-11-09T00:17:03.341+00:00">
+
+Changed the channel name.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039695190899826818" source="discord" createTime="2022-11-09T00:17:30.113+00:00">
+
+So there are a few things that I think are needed: we need to make sure we don't make it "easy" for developers to ignore backpressure from the GPU
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039695322621943880" source="discord" createTime="2022-11-09T00:18:01.518+00:00">
+
+We need to make sure that we're not relying on the OS to schedule us exactly when we'd like if we choose to deschedule, and that we're not spending significant amounts of time spinning to avoid descheduling
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039701612647694397" source="discord" createTime="2022-11-09T00:43:01.177+00:00">
+
+It's okay
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039701702112186578" source="discord" createTime="2022-11-09T00:43:22.507+00:00">
+
+Definitely
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039702165096247386" source="discord" createTime="2022-11-09T00:45:12.891+00:00">
+
+Btw I have replied to your questions in most PRs previously
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039702290010996766" source="discord" createTime="2022-11-09T00:45:42.673+00:00">
+
+(just a reminder in case github does not send notification)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039702860478283856" source="discord" createTime="2022-11-09T00:47:58.683+00:00">
+
+> we don't make it "easy" for developers to ignore backpressure from the GPU
+So continuing from https://github.com/flutter/engine/pull/37343 - may I know a bit more about why *conditionally* removing back-pressure is bad?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039703037570203668" source="discord" createTime="2022-11-09T00:48:40.905+00:00">
+
+> We need to make sure that we're not relying on the OS to schedule us exactly when we'd like if we choose to deschedule, and that we're not spending significant amounts of time spinning to avoid descheduling
+Hope my thoughts here help a little bit: https://github.com/flutter/engine/pull/37341#issuecomment-1304649243
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039703438507917423" source="discord" createTime="2022-11-09T00:50:16.496+00:00">
+
+The purpose of GPU backpressure is to help make sure we don't end up outrunning the GPU on the CPU, which will lead to jank because the GPU can't give us buffers fast enough. We've had issues with this for example even when we tried to use extensions on Android wher it would tell the GPU to drop all but the latest buffer submitted per vsync (led to jittering sometimes which looked worse/as bad as jank).
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039704175505834014" source="discord" createTime="2022-11-09T00:53:12.21+00:00">
+
+> we don't end up outrunning the GPU on the CPU, which will lead to jank because the GPU can't give us buffers fast enough.
+A bit confused... Let's say GPU is super janky and takes 100ms + CPU outrunning it and compute 6 scenes (though my proposal will not be this bad). Then, IMHO the main problem is CPU  waste battery, because the scene is thrown away. However, seems that the jank will be exactly the same, no matter whether CPU computes 6 scenes or 0 scenes, because the bottleneck is GPU?
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039704674913226862" source="discord" createTime="2022-11-09T00:55:11.278+00:00">
+
+The problem is more like: the GPU has 3 or 4 buffers to work with. If you keep asking it to give you buffers to fill when it's busy with them, you're taking time from it doing the work it needs to do to show pixels on the screen, and because you're distracting it from the work it needs to be doing now you're making everything worse for subsequent frames (until you finally stop and let it finish its work queue).
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039704793502986330" source="discord" createTime="2022-11-09T00:55:39.552+00:00">
+
+Ah interesting insight!
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039705039276625941" source="discord" createTime="2022-11-09T00:56:38.149+00:00">
+
+So you could write a program that just continually asks the GPU to hand you a buffer to draw into, but you'll overwhelm the GPU and won't be able to draw as many frames. The solution is to listen to vsync and do your best to only ask for/submit a buffer once per vsync.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039705229190500412" source="discord" createTime="2022-11-09T00:57:23.428+00:00">
+
+> asks the GPU to hand you a buffer to draw into
+May I know where the code in flutter does this? Is it happened during the rasterization, or happen when ui thread creates a scene tree? (I guess former?)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039705480366395494" source="discord" createTime="2022-11-09T00:58:23.313+00:00">
+
+If the former, then imho, whether ui thread is computing extra scenes is not a problem.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039705593834897439" source="discord" createTime="2022-11-09T00:58:50.366+00:00">
+
+because ui thread does not consume GPU buffers, and also do not disturb rasterizer from doing anything fancy
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039705814912479262" source="discord" createTime="2022-11-09T00:59:43.075+00:00">
+
+It happens implicitly when the raster task runner asks for a surface
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039705936849281085" source="discord" createTime="2022-11-09T01:00:12.147+00:00">
+
+And we tell the rasterizer to do that when the animator is done getting a frame from the framework
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039706035012763729" source="discord" createTime="2022-11-09T01:00:35.551+00:00">
+
+> when the animator is done getting a frame from the framework
+so, a `window.render`?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039706102654312498" source="discord" createTime="2022-11-09T01:00:51.678+00:00">
+
+i.e. Animator::Render
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039706251413696542" source="discord" createTime="2022-11-09T01:01:27.145+00:00">
+
+yes
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039706311383842837" source="discord" createTime="2022-11-09T01:01:41.443+00:00">
+
+Then imho it is no problem, at least for https://github.com/flutter/engine/pull/37343
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039706361249943552" source="discord" createTime="2022-11-09T01:01:53.332+00:00">
+
+because imho we just do extra onBeginFrame, not extra window.render
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039706460831105046" source="discord" createTime="2022-11-09T01:02:17.074+00:00">
+
+hmm wait a bit
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039707171157459014" source="discord" createTime="2022-11-09T01:05:06.429+00:00">
+
+my reasoning is: in this pr, what I did is, BeginFrame will run ui thread pipeline, even if it sees rasterizer queue is full. when ui thread finishes the pipeline, it calls window.render thus Animator::Render. then, if rasterizer queue is still full, it will drop the Scene (ensured by pipeline.h implementation); if not full, it will enqueue the Scene. Thus, IMHO from rasterizer's eyes it is not different.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039707208927166464" source="discord" createTime="2022-11-09T01:05:15.434+00:00">
+
+once you call onBeginFrame, the framework will eventually call window.render right?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039707254775095366" source="discord" createTime="2022-11-09T01:05:26.365+00:00">
+
+sure, but that window.render may be useless
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039707304800571433" source="discord" createTime="2022-11-09T01:05:38.292+00:00">
+
+that will cause a waste, but no harm to rasterizer
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039707417098846310" source="discord" createTime="2022-11-09T01:06:05.066+00:00">
+
+a waste because the work ui thread has done (the Scene) is not used
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039707575245099038" source="discord" createTime="2022-11-09T01:06:42.771+00:00">
+
+(if you are worried about this waste I can explain more - shortly speaking it may be worthwhile; but anyway we are discussing rasterizer and gpu now so I do not want to distract)
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039707894658109501" source="discord" createTime="2022-11-09T01:07:58.925+00:00">
+
+If we have a benchmark that shows improvement from this it's probably worth exploring. Right now I'm a bit skewed towards saying this will be bad because it will consume more CPU/power, and on lower end devices that will hurt a lot
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039708140675014686" source="discord" createTime="2022-11-09T01:08:57.58+00:00">
+
+The other thing to consider with that is what happens when you succeed: does the new frame that gets added to the pipeline look like it "fits" well with the previous and next frames, or does it get rendered in an unexpected vsync and end up looking slightly off/jittery
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039708256425218058" source="discord" createTime="2022-11-09T01:09:25.177+00:00">
+
+> will be bad because it will consume more CPU/power, and on lower end devices that will hurt a lot
+That happens only if it is really wasted. However, looking at figure in https://github.com/flutter/engine/pull/36912 - which is the main case the proposal is to solve - ui thread work is not wasted at all
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039708499132809256" source="discord" createTime="2022-11-09T01:10:23.043+00:00">
+
+> If we have a benchmark that shows improvement from this it's probably worth exploring
+Is it OK to be a benchmark like https://github.com/flutter/engine/pull/37341, i.e. a one with tons of deliberately blank loops?
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039708528539091015" source="discord" createTime="2022-11-09T01:10:30.054+00:00">
+
+Sure, but this is not the typical problem that I see when working on real applications on lower end devices 🙂
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039708612550987867" source="discord" createTime="2022-11-09T01:10:50.084+00:00">
+
+Btw what is the typical problems?
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039708687905861695" source="discord" createTime="2022-11-09T01:11:08.05+00:00">
+
+The more typical problem is a frame that just blows way through frame budget (e.g. 40-50ms) to build.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039708692091764756" source="discord" createTime="2022-11-09T01:11:09.048+00:00">
+
+Indeed I aim at 60FPS (not 55FPS etc) so each corner case I face needs to be solved 🙂
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039708738430435378" source="discord" createTime="2022-11-09T01:11:20.096+00:00">
+
+That's just https://github.com/fzyzcjy/flutter_smooth solves! 😄
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039708905636368384" source="discord" createTime="2022-11-09T01:11:59.961+00:00">
+
+So this benchmark: https://github.com/flutter/flutter/blob/master/dev/benchmarks/macrobenchmarks/lib/src/list_text_layout.dart
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039708977434480750" source="discord" createTime="2022-11-09T01:12:17.079+00:00">
+
+Indeed, I do not realize PR 36912 is even a problem, *before* I have finished the main part of flutter_smooth
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039709095629967440" source="discord" createTime="2022-11-09T01:12:45.259+00:00">
+
+In other words: flutter_smooth solves the main type of problem, then the problems that are less likely to happen now become main problems that makes me about 50-55FPS but not ~60FPS
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039709126009311312" source="discord" createTime="2022-11-09T01:12:52.502+00:00">
+
+That draws something like a contacts list. On a low end Android device, building that scene can easily take 27-30ms, mostly in text layout
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039709222406995978" source="discord" createTime="2022-11-09T01:13:15.485+00:00">
+
+IIRC my earliest prototype of flutter smooth have already solved that 🙂
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039709350857551872" source="discord" createTime="2022-11-09T01:13:46.11+00:00">
+
+https://github.com/flutter/flutter/issues/101227#issuecomment-1256212759
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039709385800286259" source="discord" createTime="2022-11-09T01:13:54.441+00:00">
+
+(at that time it is not called flutter_smooth)
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039709399515676733" source="discord" createTime="2022-11-09T01:13:57.711+00:00">
+
+I've yet to see a full, runnable solution that solves it though. My recollection (which may be wrong) is that the proposals tended to have a lot of comments like "fix this later"
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039709532768706592" source="discord" createTime="2022-11-09T01:14:29.481+00:00">
+
+Ah, sure, I should make a full runnable app now (but with custom framework and engine code)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039709785500692561" source="discord" createTime="2022-11-09T01:15:29.737+00:00">
+
+But I already have sth similar: https://github.com/fzyzcjy/flutter_smooth/blob/bf4f69884b2b05147875d7c6ee1b28b52e5c34eb/packages/smooth/example/lib/example_page_transition/sub_page.dart#L68
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039709860444520488" source="discord" createTime="2022-11-09T01:15:47.605+00:00">
+
+Smooth animation (material page route) when entering a page, and that page is really heavy to build (using `ComplexWidget` to simulate, can be seen in code)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039710060865134662" source="discord" createTime="2022-11-09T01:16:35.389+00:00">
+
+is that sound interesting to you? or I need to make an exact reproduction again for list_text_layout
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039710089956819004" source="discord" createTime="2022-11-09T01:16:42.325+00:00">
+
+I am not convinced that it is actually the same.  And even if it is the same problem, it would need to be adopted pretty widely before we could land changes to the engine that only make sense if you're using it.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039710167329165342" source="discord" createTime="2022-11-09T01:17:00.772+00:00">
+
+I'd like to see what it looks like to use your solution to fix the list_text_layout to be faster
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039710208324288637" source="discord" createTime="2022-11-09T01:17:10.546+00:00">
+
+(even if it requires a custom engine or framework build to achieve)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039710612810379264" source="discord" createTime="2022-11-09T01:18:46.983+00:00">
+
+(forget to reply this) It looks well IMHO. But if you are having a rasterization that is longer than 16ms, then it is inevitable to have one jank feeling. see the main figure of PR for more details. And, as for flutter_smooth (note: the PR also holds for classical flutter), an extra doc page: https://cjycode.com/flutter_smooth/benchmark/analyze/linearity/ (I made up a term called linearity, which is what you mention as jittery I guess)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039710821175009290" source="discord" createTime="2022-11-09T01:19:36.661+00:00">
+
+Sure. https://github.com/fzyzcjy/flutter_smooth/issues/173
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039711163174375546" source="discord" createTime="2022-11-09T01:20:58.2+00:00">
+
+A bit confused: Do you mean flutter_smooth should be adopted widely before flutter engine can change?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039711305201897502" source="discord" createTime="2022-11-09T01:21:32.062+00:00">
+
+But imho most people (including me) will never use something that is not in flutter stable for production app
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039711607808348260" source="discord" createTime="2022-11-09T01:22:44.209+00:00">
+
+But the stars (>700) may show that many are interested in it
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039711628708548738" source="discord" createTime="2022-11-09T01:22:49.192+00:00">
+
+So I said that a patch you opened in the engine will fail to help some common sources of jank and actually potentially make them worse on low end devices. If I understand, you're saying those common sources go away with flutter_smooth so that's not a problem, and you're moving on to other sources of jank once you solve those common problems.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039711871055446016" source="discord" createTime="2022-11-09T01:23:46.972+00:00">
+
+as well as reddit popularity https://www.reddit.com/r/FlutterDev/comments/y6um51/be_60fps_smooth_no_matter_how_janky_your_app/
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039711887924936756" source="discord" createTime="2022-11-09T01:23:50.994+00:00">
+
+
+![image](https://cdn.discordapp.com/attachments/1039667632342835250/1039711887576801330/image.png)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039711906434388071" source="discord" createTime="2022-11-09T01:23:55.407+00:00">
+
+4th popular in this year
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039711909877923962" source="discord" createTime="2022-11-09T01:23:56.228+00:00">
+
+Put more concretely: flutter has some very large customers who don't use flutter_smooth. We can't make changes to the engine that will make their applications worse. If flutter_smooth helps those applications, we should try to integrate it into the framework
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039711926151823450" source="discord" createTime="2022-11-09T01:24:00.108+00:00">
+
+That's very cool 🙂
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039712075179622500" source="discord" createTime="2022-11-09T01:24:35.639+00:00">
+
+and even get to GitHub trending main board twice (I really did not expect that - you know github trending main board contains all languages, so almost impossible for a Flutter/Dart project to be there)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039712226166177842" source="discord" createTime="2022-11-09T01:25:11.637+00:00">
+
+https://github.com/search?q=flutter_smooth&type=code can see some spiders get that trending data - 10.30 and 10.21
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039712406819065856" source="discord" createTime="2022-11-09T01:25:54.708+00:00">
+
+imho maybe not "make them worse".
+> If I understand, you're saying those common sources go away with flutter_smooth so that's not a problem, and you're moving on to other sources of jank once you solve those common problems.
+Yes
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039712539250008065" source="discord" createTime="2022-11-09T01:26:26.282+00:00">
+
+definitely, it is also very interesting to be integrated to flutter
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039712647672778822" source="discord" createTime="2022-11-09T01:26:52.132+00:00">
+
+so... what makes it worse if having the PR on low end device?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039712732653559904" source="discord" createTime="2022-11-09T01:27:12.393+00:00">
+
+except that I do not provide a benchmark yet (since you requested just a few minutes ago 🙂 )
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039712821434396712" source="discord" createTime="2022-11-09T01:27:33.56+00:00">
+
+the rasterizer problem seems not to be a problem as said above
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039712835174944839" source="discord" createTime="2022-11-09T01:27:36.836+00:00">
+
+or I understand wrongly
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039712839323111475" source="discord" createTime="2022-11-09T01:27:37.825+00:00">
+
+Doing more work will make things worse
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039712872604905543" source="discord" createTime="2022-11-09T01:27:45.76+00:00">
+
+I see
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039712883677864030" source="discord" createTime="2022-11-09T01:27:48.4+00:00">
+
+If you're on a slow device and it's taking a lot of time to build every frame
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039713016654069780" source="discord" createTime="2022-11-09T01:28:20.104+00:00">
+
+> taking a lot of time to build every frame
+yes, that happens for users without flutter_smooth
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039713302298755132" source="discord" createTime="2022-11-09T01:29:28.207+00:00">
+
+There are many more users who don't have flutter_smooth than do 🙂 FWIW, internally at google applications are built relatively close to head of master
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039713359785893918" source="discord" createTime="2022-11-09T01:29:41.913+00:00">
+
+(usually about a week or so behind it)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039713403742191697" source="discord" createTime="2022-11-09T01:29:52.393+00:00">
+
+you guys are so brave 🙂
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039713427154812958" source="discord" createTime="2022-11-09T01:29:57.975+00:00">
+
+even not built with beta?
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039713482498642000" source="discord" createTime="2022-11-09T01:30:11.17+00:00">
+
+We'll get yelled at by all those customers when their benchmarks go south, and telling them "oh well if you use flutter_smooth it'll be fixed" won't be good enough
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039713515696574565" source="discord" createTime="2022-11-09T01:30:19.085+00:00">
+
+definitely
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039713562358190190" source="discord" createTime="2022-11-09T01:30:30.21+00:00">
+
+It's a little more complicated than what I'm saying but no, for the most part they're newer than beta
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039713784241061978" source="discord" createTime="2022-11-09T01:31:23.111+00:00">
+
+so I guess the main priority is like this: 
+1. maybe we can firstly PR for a partial-flutter_smooth, i.e. a version for only maybe 50FPS not 60FPS (because all those edge cases are not solved). then the PR merged into flutter, and people can try it. then, if many people find it quite helpful etc, maybe we can consider the rest prs or integrate into framework?
+2. or alternatively, shall we just consider integrating flutter_smooth to framework now? so many PRs that solely wants to make flutter expose some low-level things are never a  problem now
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/37343" source="github" createTime="2022-11-09T01:32:10Z">
+
+For future readers: This is discussed in https://discord.com/channels/608014603317936148/1039667632342835250
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039714099099078756" source="discord" createTime="2022-11-09T01:32:38.179+00:00">
+
+yeah, making incremental improvements is a good way to go.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039714216770285649" source="discord" createTime="2022-11-09T01:33:06.234+00:00">
+
+And having some compelling benchmarks would help ideally without requiring major surgery on the application side to achieve)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039714308457771028" source="discord" createTime="2022-11-09T01:33:28.094+00:00">
+
+totally agree
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039714471268073472" source="discord" createTime="2022-11-09T01:34:06.911+00:00">
+
+Btw flutter_smooth does have (hopefully) compelling bench: (1) 3-second video in https://github.com/fzyzcjy/flutter_smooth (2) a chapter in https://cjycode.com/flutter_smooth/benchmark/
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039714605896835122" source="discord" createTime="2022-11-09T01:34:39.009+00:00">
+
+so, one of the main blocker before partial-flutter_smooth can land, maybe: https://github.com/flutter/engine/pull/36438
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039714746494095380" source="discord" createTime="2022-11-09T01:35:12.53+00:00">
+
+also, pull-based model (e.g. https://github.com/flutter/engine/pull/36438) - otherwise ListView scrolling cannot be smooth because we have no way to read touch events, though your "list of text" can be
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039715266168373268" source="discord" createTime="2022-11-09T01:37:16.43+00:00">
+
+I think ideally we have a solution that doesn't require calling `render` more than once per `onBeginFrame`
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039715360670220318" source="discord" createTime="2022-11-09T01:37:38.961+00:00">
+
+I have tried to think about it, but that seems fundamental for flutter_smooth
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039715398024708289" source="discord" createTime="2022-11-09T01:37:47.867+00:00">
+
+whole design details: https://cjycode.com/flutter_smooth/design/
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039715870043279462" source="discord" createTime="2022-11-09T01:39:40.405+00:00">
+
+so we may not have ideal things 😐 but considering the benefits of flutter_smooth, I hope it is worthwhile
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039715973688729671" source="discord" createTime="2022-11-09T01:40:05.116+00:00">
+
+(benefits, including future benefits if it is merged into flutter)
+
+</DiscussionComment>
