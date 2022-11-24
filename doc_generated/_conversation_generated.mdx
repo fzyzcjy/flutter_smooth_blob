@@ -14862,7 +14862,7 @@ If you need help, consider asking for advice on the #hackers-new channel on [Dis
 
 ### Fix error when resetting configurations in tear down phase
 
-(This is WIP, since I want to see whether this change will make regression test fail or not)
+~~(This is WIP, since I want to see whether this change will make regression test fail or not)~~ ready for review
 
 Consider this simple example
 
@@ -16213,5 +16213,350 @@ so we may not have ideal things 😐 but considering the benefits of flutter_smo
 <DiscussionComment author="fzyzcjy" link="https://discord.com/channels/608014603317936148/1039667632342835250/1039715973688729671" source="discord" createTime="2022-11-09T01:40:05.116+00:00">
 
 (benefits, including future benefits if it is merged into flutter)
+
+</DiscussionComment>
+
+<DiscussionComment author="justinmc" link="https://github.com/flutter/flutter/issues/114467" source="github" createTime="2022-11-10T21:36:13Z">
+
+I have to agree with @pdblasi-google, I'm not certain that this is better than the existing API, so I don't think we should make this change.  Instead, here's what I think we can do about this problem:
+
+  1. Clearing should happen immediately after setting.  This makes it obvious to future readers of the test that these values need to be cleared, and it makes it less likely the test will end without the values being cleared.  I think this could be done in this PR or in a new PR.
+
+Old way:
+
+```dart
+tester.binding.window.devicePixelRatioTestValue = 1.2;
+tester.binding.window.physicalSizeTestValue = const Size(250, 300);
+
+... // Rest of test
+
+ tester.binding.window.clearPhysicalSizeTestValue();
+ tester.binding.window.clearDevicePixelRatioTestValue();
+```
+
+Should be changed to:
+
+```dart
+tester.binding.window.devicePixelRatioTestValue = 1.2;
+addTearDown(clearDevicePixelRatioTestValue);
+tester.binding.window.physicalSizeTestValue = const Size(250, 300);
+addTearDown(clearPhysicalSizeTestValue);
+
+... // Rest of test
+```
+
+  2. `devicePixelRatioTestValueAutoClear` and `physicalSizeTestValueAutoClear` could be released as a Pub package if desired.
+
+  3.  Like @pdblasi-google said, ideas about autoclear and other patterns that avoid this problem should be directed at @goderbauer's work to move from TestWindow to TestView, since we have the opportunity to start fresh here and change the API.  He has a [design doc](https://docs.google.com/document/d/1Z7Qrb08dOnfB8IxPgsyujVn4MsDcYPUUku9CeF70_S0/edit), which it doesn't specifically mention this about testing so it might be worth bringing it up in a comment there.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114391" source="github" createTime="2022-11-10T23:30:27Z">
+
+@christopherfujino Sure, will do this soon
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114467" source="github" createTime="2022-11-10T23:35:09Z">
+
+Hmm I see. Then maybe I will refactor like what you said.
+
+P.S Did a comment there just now.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/37340" source="github" createTime="2022-11-10T23:36:20Z">
+
+All right, I will try to squeeze some time to make a benchmark later :)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114488" source="github" createTime="2022-11-11T23:17:06Z">
+
+@Piinks Sure, will do it later. Btw may I get some hints about how to add test for this feature? Not very familiar with registerBoolServiceExtension etc
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/114400" source="github" createTime="2022-11-14T23:03:06Z">
+
+auto label is removed for flutter/flutter, pr: 114400, due to - The status or check suite [Mac tool_tests_commands](https://ci.chromium.org/b/8797480605381409169) has failed. Please fix the issues identified (or deflake) before re-applying this label.
+
+
+</DiscussionComment>
+
+<DiscussionComment author="jonahwilliams" link="https://github.com/flutter/flutter/issues/114400" source="github" createTime="2022-11-14T23:04:40Z">
+
+@fzyzcjy could you update to ToT so we can land this?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114400" source="github" createTime="2022-11-14T23:25:04Z">
+
+@jonahwilliams sure, done (waiting for ci now)
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/114506" source="github" createTime="2022-11-15T23:12:53Z">
+
+I am going to close this as it doesn't add any new information to the doc.
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/114468" source="github" createTime="2022-11-15T23:16:45Z">
+
+> (This is WIP, since I want to see whether this change will make regression test fail or not)
+
+Do you still have further plans for this? Or did it achieve its goal and can be closed?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114468" source="github" createTime="2022-11-15T23:23:54Z">
+
+Oh it is ready for review
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/flutter/issues/114468" source="github" createTime="2022-11-15T23:24:05Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/112735" source="github" createTime="2022-11-15T23:28:28Z">
+
+@fzyzcjy Can you rebase this to trigger the Google testing check again? Looks like it got stuck...
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/112735" source="github" createTime="2022-11-15T23:31:57Z">
+
+@goderbauer done
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/113831" source="github" createTime="2022-11-16T00:08:22Z">
+
+This is internal state that nobody should depend on. If you have a use case for this, I suggest filing an issue that describes what you want to achieve instead of describing a solution.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113831" source="github" createTime="2022-11-16T00:10:19Z">
+
+Ok, I will explain why this is needed in a separate issue later.
+
+</DiscussionComment>
+
+<DiscussionComment author="goderbauer" link="https://github.com/flutter/flutter/issues/113828" source="github" createTime="2022-11-16T16:58:38Z">
+
+I don't think we should be exposing random implementation details like that. I would suggest filing an issue discussing the problem you're trying to solve without tying it to a particular solution. We can then see if this fixes that particular problem.
+
+</DiscussionComment>
+
+<DiscussionComment author="dnfield" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-11-16T17:04:42Z">
+
+You can use systracing instead of timeline by doing `--trace-systrace`. That is less expensive than timeline based tracing. 
+
+Unfortunately, I'm having trouble from the images telling where the extra time is being spent. I'm also confused why the traces are looking at pointer data packet events when this bug is about frame timings. 
+
+I think we should try to look at ways to make the frame timings measurements cheaper on representative hardware rather than disabling them. Timeline adds more overhead on every frame. Maybe you could file an issue with some of your findings?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114124" source="github" createTime="2022-11-16T22:50:39Z">
+
+Have no bandwidth now, will reply to review soon, thanks :)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113828" source="github" createTime="2022-11-16T22:51:47Z">
+
+I see, same as before, I will file soon when having time. Thanks!
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-11-16T22:53:51Z">
+
+> Unfortunately, I'm having trouble from the images telling where the extra time is being spent. I'm also confused why the traces are looking at pointer data packet events when this bug is about frame timings.
+
+Ah sorry! I must paste the wrong image here - at the time I wrote the reply I may be thinking about my another PR about pointer events.
+
+> I think we should try to look at ways to make the frame timings measurements cheaper on representative hardware rather than disabling them. Timeline adds more overhead on every frame. Maybe you could file an issue with some of your findings?
+
+Sure. I will do that soon (have no time now so possibly within a few days)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114468" source="github" createTime="2022-11-17T00:16:58Z">
+
+Thanks :) I will modify and update it soon (no time now though)
+
+</DiscussionComment>
+
+<DiscussionComment author="pdblasi-google" link="https://github.com/flutter/flutter/issues/114468" source="github" createTime="2022-11-17T21:33:34Z">
+
+Followup on moving the invariant verifications into an `addTearDown` (came to me at about 3AM last night...).
+
+I think if we move the invariant verifications into an `addTearDown`, we may _also_ need to move the storing of those variables (for checking the end state) that get checked into a `setUp` call. I think as it stands right now, if someone were to use `setUp` to change an invariant, it'll have a couple problems:
+
+a) It won't validate that the invariant is reset after the test, since it's actually set _before_ the test
+b) If (after this issue is fixed) the invariant is reset via an `addTearDown` or `tearDown`, then the verifications will fail because they'll have the _changed_ value saved to check against, since it was changed before the test.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114468" source="github" createTime="2022-11-17T23:16:05Z">
+
+Good point! I will check that later.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/114481" source="github" createTime="2022-11-17T23:46:28Z">
+
+auto label is removed for flutter/flutter, pr: 114481, due to - Please get at least one approved review if you are already a member or two member reviews if you are not a member before re-applying this label. __Reviewers__: If you left a comment approving, please use the "approve" review action instead.
+
+</DiscussionComment>
+
+<DiscussionComment author="auto-submit" link="https://github.com/flutter/flutter/issues/114481" source="github" createTime="2022-11-17T23:46:29Z">
+
+auto label is removed for flutter/flutter, pr: 114481, due to Validations Fail.
+
+</DiscussionComment>
+
+<DiscussionComment author="Piinks" link="https://github.com/flutter/flutter/issues/114488" source="github" createTime="2022-11-22T23:04:27Z">
+
+Hm, I am not really sure how to test this. Have you asked Hixie on Discord if it qualifies for a no test exemption?
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114488" source="github" createTime="2022-11-22T23:14:59Z">
+
+@Piinks Sure, ~~I will ask soon~~ ask sent
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113526" source="github" createTime="2022-11-23T01:01:47Z">
+
+As discussed earlier in Discord, maybe I will focus on the main part of flutter_smooth now (quite busy recently), and restart this PR after the critical PRs of flutter_smooth has been merged.
+
+(For future readers of this thread: Recent progress of the critical PRs are not only in flutter repositories and discord, but also somewhere such as https://github.com/fzyzcjy/flutter_smooth/issues/173)
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/37340" source="github" createTime="2022-11-23T01:22:41Z">
+
+As discussed in Discord with @dnfield previously, I will firstly focus on the PRs that are critical to the main part of flutter_smooth, and deal with these PRs (which improves performance roughly several FPS per PR) later.
+
+(For future readers of this thread: Recent progress of the critical PRs are not only in flutter repositories and discord, but also somewhere such as https://github.com/fzyzcjy/flutter_smooth/issues/173)
+
+</DiscussionComment>
+
+<DiscussionComment author="Hixie" link="https://github.com/flutter/flutter/issues/114488" source="github" createTime="2022-11-23T01:49:21Z">
+
+test-exempt: code refactor with no semantic change
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/engine/issues/37865" source="github" createTime="2022-11-23T05:55:26Z">
+
+### Reland fix wrong VSYNC event
+
+Reland #36775 
+Previously reverted by https://github.com/flutter/engine/pull/37589
+Close https://github.com/flutter/flutter/issues/115161
+
+## Pre-launch Checklist
+
+- [ ] I read the [Contributor Guide] and followed the process outlined there for submitting PRs.
+- [ ] I read the [Tree Hygiene] wiki page, which explains my responsibilities.
+- [ ] I read and followed the [Flutter Style Guide] and the [C++, Objective-C, Java style guides].
+- [ ] I listed at least one issue that this PR fixes in the description above.
+- [ ] I added new tests to check the change I am making or feature I am adding, or Hixie said the PR is test-exempt. See [testing the engine] for instructions on writing and running engine tests.
+- [ ] I updated/added relevant documentation (doc comments with `///`).
+- [ ] I signed the [CLA].
+- [ ] All existing and new tests are passing.
+
+If you need help, consider asking for advice on the #hackers-new channel on [Discord].
+
+<!-- Links -->
+[Contributor Guide]: https://github.com/flutter/flutter/wiki/Tree-hygiene#overview
+[Tree Hygiene]: https://github.com/flutter/flutter/wiki/Tree-hygiene
+[Flutter Style Guide]: https://github.com/flutter/flutter/wiki/Style-guide-for-Flutter-repo
+[C++, Objective-C, Java style guides]: https://github.com/flutter/engine/blob/main/CONTRIBUTING.md#style
+[testing the engine]: https://github.com/flutter/flutter/wiki/Testing-the-engine
+[CLA]: https://cla.developers.google.com/
+[flutter/tests]: https://github.com/flutter/tests
+[breaking change policy]: https://github.com/flutter/flutter/wiki/Tree-hygiene#handling-breaking-changes
+[Discord]: https://github.com/flutter/flutter/wiki/Chat
+
+
+</DiscussionComment>
+
+<DiscussionComment author="flutter-dashboard" link="https://github.com/flutter/engine/issues/37865" source="github" createTime="2022-11-23T05:55:30Z">
+
+It looks like this pull request may not have tests. Please make sure to add tests before merging. If you need [an exemption](https://github.com/flutter/flutter/wiki/Tree-hygiene#tests) to this rule, contact Hixie on the #hackers channel in [Chat](https://github.com/flutter/flutter/wiki/Chat) (don't just cc him here, he won't see it! *He's on Discord!*).
+
+If you are not sure if you need tests, consider this rule of thumb: the purpose of a test is to make sure someone doesn't accidentally revert the fix. Ask yourself, **is there anything in your PR that you feel it is important we not accidentally revert back to how it was before your fix?**
+
+__Reviewers__: Read the [Tree Hygiene page](https://github.com/flutter/flutter/wiki/Tree-hygiene#how-to-review-code) and make sure this patch meets those guidelines before LGTMing.
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113831" source="github" createTime="2022-11-23T06:35:42Z">
+
+Issue created describing this: https://github.com/flutter/flutter/issues/115899
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/113828" source="github" createTime="2022-11-23T06:45:11Z">
+
+The requested issue is created and described the details: https://github.com/flutter/flutter/issues/115901
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114468" source="github" createTime="2022-11-23T07:02:17Z">
+
+Well, `tearDown` does not seem to work. I guess it is because, our addTearDown(verifyInvariants) are called *before* this user-added tearDown. Thus, even if user resets value in this tearDown, our verifications run *before* that so is not aware of it.
+
+However, IMHO this PR is still useful, because even if tearDown is not supported, it adds support for addTearDown, which is very frequently used.
+
+---
+
+tests:
+
+```dart
+    group('tearDown does not work yet', () {
+      tearDown(() {
+        timeDilation = 1;
+      });
+
+      testWidgets('main test inside group', (WidgetTester tester) async {
+        timeDilation = 2;
+      });
+    });
+```
+
+yields
+
+```
+package:flutter/src/scheduler/binding.dart 662:9  SchedulerBinding.debugAssertNoTimeDilation.<fn>
+package:flutter/src/scheduler/binding.dart 665:6  SchedulerBinding.debugAssertNoTimeDilation
+package:flutter_test/src/binding.dart 971:12      TestWidgetsFlutterBinding._verifyInvariants
+package:flutter_test/src/binding.dart 1436:11     AutomatedTestWidgetsFlutterBinding._verifyInvariants
+package:flutter_test/src/binding.dart 950:9       TestWidgetsFlutterBinding._runTestBody.<fn>
+===== asynchronous gap ===========================
+dart:async                                        _CustomZone.registerUnaryCallback
+package:flutter_test/src/binding.dart 941:9       TestWidgetsFlutterBinding._runTestBody.<fn>
+
+The timeDilation was changed and not reset by the test.
+```
+
+</DiscussionComment>
+
+<DiscussionComment author="fzyzcjy" link="https://github.com/flutter/flutter/issues/114468" source="github" createTime="2022-11-23T07:41:52Z">
+
+Hmm CI fails. I will firstly revert now
 
 </DiscussionComment>
